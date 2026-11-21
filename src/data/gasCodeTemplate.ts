@@ -394,6 +394,13 @@ function saveApprovalFileToDrive(folderUrlOrId, tempohTugasan, namaPemohon, file
   }
 }
 
+function normalizeVersionText(val) {
+  var trimmed = (val !== undefined && val !== null) ? String(val).trim() : "";
+  if (!trimmed) return "3.0";
+  if (/^\\d+$/.test(trimmed)) return trimmed + ".0";
+  return trimmed;
+}
+
 function readSettingsFromSheet() {
   var ss = getTargetSpreadsheet();
   var activeUrl = getActiveSheetUrl(ss);
@@ -433,7 +440,7 @@ function readSettingsFromSheet() {
 
     var savedTajuk1 = String(displayVals[11] || vals[11] || "").trim() || "Unit PRPA HTAR";
     var savedFooterText = String(displayVals[12] || vals[12] || "").trim() || "Hak Cipta Terpelihara © 2026";
-    var savedAppVersion = String(displayVals[13] || vals[13] || "").trim() || "3.0";
+    var savedAppVersion = normalizeVersionText(displayVals[13] || vals[13]);
     var savedEditionName = String(displayVals[14] || vals[14] || "").trim() || "Edisi Terkini Dis 2026";
     var savedVersionUpdatedAt = String(displayVals[15] || vals[15] || "").trim() || "Disember 2026";
 
@@ -845,7 +852,7 @@ function gasSaveConfig(configData) {
 
     var nextTajuk1 = String(c.tajuk1 !== undefined && c.tajuk1 !== null ? c.tajuk1 : "").trim() || "Unit PRPA HTAR";
     var nextFooterText = String(c.footerText !== undefined && c.footerText !== null ? c.footerText : "").trim() || "Hak Cipta Terpelihara © 2026";
-    var nextAppVersion = String(c.appVersion !== undefined && c.appVersion !== null ? c.appVersion : "").trim() || "3.0";
+    var nextAppVersion = normalizeVersionText(c.appVersion);
     var nextEditionName = String(c.editionName !== undefined && c.editionName !== null ? c.editionName : "").trim() || "Edisi Terkini Dis 2026";
     var nextVersionUpdatedAt = String(c.versionUpdatedAt !== undefined && c.versionUpdatedAt !== null ? c.versionUpdatedAt : "").trim() || "Disember 2026";
 

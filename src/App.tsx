@@ -40,6 +40,7 @@ import {
   formatDateDisplay,
   generateDateItems,
   generateRosterPeriods,
+  normalizeAppVersion,
   SHIFT_OPTIONS,
   STAFF_NAMES,
   WARNING_ITEMS,
@@ -282,7 +283,7 @@ export default function App() {
               : DEFAULT_CONFIG.footerText,
           appVersion:
             parsed.appVersion !== undefined && parsed.appVersion !== null && String(parsed.appVersion).trim()
-              ? String(parsed.appVersion).trim()
+              ? normalizeAppVersion(parsed.appVersion, DEFAULT_CONFIG.appVersion)
               : DEFAULT_CONFIG.appVersion,
           editionName:
             parsed.editionName !== undefined && parsed.editionName !== null && String(parsed.editionName).trim()
@@ -618,7 +619,7 @@ export default function App() {
             : prev.footerText || DEFAULT_CONFIG.footerText,
         appVersion:
           res.appVersion !== undefined && res.appVersion !== null && String(res.appVersion).trim()
-            ? String(res.appVersion).trim()
+            ? normalizeAppVersion(res.appVersion, prev.appVersion || DEFAULT_CONFIG.appVersion)
             : prev.appVersion || DEFAULT_CONFIG.appVersion,
         editionName:
           res.editionName !== undefined && res.editionName !== null && String(res.editionName).trim()
@@ -2032,8 +2033,8 @@ export default function App() {
             footerText: result?.footerText ? String(result.footerText).trim() : sanitizedNextConfig.footerText,
             appVersion:
               result?.appVersion !== undefined && result?.appVersion !== null && String(result.appVersion).trim()
-                ? String(result.appVersion).trim()
-                : sanitizedNextConfig.appVersion,
+                ? normalizeAppVersion(result.appVersion, sanitizedNextConfig.appVersion)
+                : normalizeAppVersion(sanitizedNextConfig.appVersion),
             editionName: result?.editionName ? String(result.editionName).trim() : sanitizedNextConfig.editionName,
             versionUpdatedAt: result?.versionUpdatedAt
               ? String(result.versionUpdatedAt).trim()
@@ -2105,7 +2106,7 @@ export default function App() {
               footerText: res.footerText ? String(res.footerText).trim() : prev.footerText,
               appVersion:
                 res.appVersion !== undefined && res.appVersion !== null && String(res.appVersion).trim()
-                  ? String(res.appVersion).trim()
+                  ? normalizeAppVersion(res.appVersion, prev.appVersion)
                   : prev.appVersion,
               editionName: res.editionName ? String(res.editionName).trim() : prev.editionName,
               versionUpdatedAt: res.versionUpdatedAt
@@ -2284,7 +2285,7 @@ export default function App() {
             <div className="mt-1.5 flex flex-col items-center justify-center gap-0.5 text-[11px] sm:text-sm text-slate-500">
               <span className="font-medium text-slate-600">{appConfig.tajuk1 || DEFAULT_CONFIG.tajuk1}</span>
               <span className="font-semibold text-sky-800">
-                Versi {appConfig.appVersion || DEFAULT_CONFIG.appVersion}
+                Versi {normalizeAppVersion(appConfig.appVersion, DEFAULT_CONFIG.appVersion)}
                 {(appConfig.editionName || DEFAULT_CONFIG.editionName)
                   ? ` (${appConfig.editionName || DEFAULT_CONFIG.editionName})`
                   : ''}
@@ -3174,7 +3175,7 @@ export default function App() {
         <p className="text-[9.5px] min-[420px]:text-[11px] sm:text-xs font-medium text-slate-600 whitespace-nowrap">
           {appConfig.footerText || DEFAULT_CONFIG.footerText},{' '}
           <span className="font-semibold text-slate-700">
-            PPPU5 Roster Management System &bull; Versi {appConfig.appVersion || DEFAULT_CONFIG.appVersion}
+            PPPU5 Roster Management System &bull; Versi {normalizeAppVersion(appConfig.appVersion, DEFAULT_CONFIG.appVersion)}
           </span>
         </p>
         <p className="text-[10px] sm:text-[11px] text-slate-500">

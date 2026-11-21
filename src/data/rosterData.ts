@@ -165,6 +165,14 @@ export const DEFAULT_CONFIG: AppConfig = {
   versionUpdatedAt: 'Disember 2026',
 };
 
+export function normalizeAppVersion(raw: unknown, fallback = '3.0'): string {
+  if (raw === undefined || raw === null) return fallback;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return fallback;
+  if (/^\d+$/.test(trimmed)) return `${trimmed}.0`;
+  return trimmed;
+}
+
 export function generateRosterPeriods(): RosterPeriod[] {
   const periods: RosterPeriod[] = [];
   for (let year = 2026; year <= 2027; year++) {

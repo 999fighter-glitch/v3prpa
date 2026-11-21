@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { AppConfig, DEFAULT_CONFIG, formatDateDisplay } from './rosterData';
+import { AppConfig, DEFAULT_CONFIG, formatDateDisplay, normalizeAppVersion } from './rosterData';
 
 export interface GuidelineStep {
   stepNumber: number;
@@ -214,7 +214,7 @@ export const USER_GUIDELINE_SECTIONS: GuidelineStep[] = [
 
 export function buildUserGuidelineShareSummary(config: AppConfig): string {
   const tajuk1 = (config.tajuk1 || DEFAULT_CONFIG.tajuk1).trim();
-  const version = (config.appVersion || DEFAULT_CONFIG.appVersion).trim();
+  const version = normalizeAppVersion(config.appVersion, DEFAULT_CONFIG.appVersion);
   const edition = (config.editionName || DEFAULT_CONFIG.editionName).trim();
   const tempoh = `${formatDateDisplay(config.startDate)} - ${formatDateDisplay(config.endDate)}`;
   return (
@@ -240,7 +240,7 @@ export function generateUserGuidelinePdfBlob(config: AppConfig): Blob {
   const contentWidth = pageWidth - marginX * 2;
 
   const tajuk1 = (config.tajuk1 || DEFAULT_CONFIG.tajuk1).trim();
-  const version = (config.appVersion || DEFAULT_CONFIG.appVersion).trim();
+  const version = normalizeAppVersion(config.appVersion, DEFAULT_CONFIG.appVersion);
   const edition = (config.editionName || DEFAULT_CONFIG.editionName).trim();
   const updatedAt = (config.versionUpdatedAt || DEFAULT_CONFIG.versionUpdatedAt).trim();
   const footerText = (config.footerText || DEFAULT_CONFIG.footerText).trim();

@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { buildGasCode } from '../data/gasCodeTemplate';
-import { AppConfig, ApplicationRecord, ForceStatus } from '../data/rosterData';
+import { AppConfig, ApplicationRecord, ForceStatus, normalizeAppVersion } from '../data/rosterData';
 import {
   ADMIN_GUIDELINE_SECTIONS,
   buildUserGuidelineShareSummary,
@@ -105,7 +105,7 @@ export function AdminModal({
   const [logoUrl, setLogoUrl] = useState(config.logoUrl);
   const [tajuk1, setTajuk1] = useState(config.tajuk1 || 'Unit PRPA HTAR');
   const [footerText, setFooterText] = useState(config.footerText || 'Hak Cipta Terpelihara © 2026');
-  const [appVersion, setAppVersion] = useState(config.appVersion || '3.0');
+  const [appVersion, setAppVersion] = useState(normalizeAppVersion(config.appVersion, '3.0'));
   const [editionName, setEditionName] = useState(config.editionName || 'Edisi Terkini Dis 2026');
   const [versionUpdatedAt, setVersionUpdatedAt] = useState(config.versionUpdatedAt || 'Disember 2026');
 
@@ -136,7 +136,7 @@ export function AdminModal({
       setLogoUrl(config.logoUrl);
       setTajuk1(config.tajuk1 || 'Unit PRPA HTAR');
       setFooterText(config.footerText || 'Hak Cipta Terpelihara © 2026');
-      setAppVersion(config.appVersion || '3.0');
+      setAppVersion(normalizeAppVersion(config.appVersion, '3.0'));
       setEditionName(config.editionName || 'Edisi Terkini Dis 2026');
       setVersionUpdatedAt(config.versionUpdatedAt || 'Disember 2026');
       setLoginError('');
@@ -512,7 +512,7 @@ export function AdminModal({
       logoUrl: logoUrl.trim() || config.logoUrl,
       tajuk1: tajuk1.trim() || 'Unit PRPA HTAR',
       footerText: footerText.trim() || 'Hak Cipta Terpelihara © 2026',
-      appVersion: appVersion.trim() || '3.0',
+      appVersion: normalizeAppVersion(appVersion, '3.0'),
       editionName: editionName.trim() || 'Edisi Terkini Dis 2026',
       versionUpdatedAt: versionUpdatedAt.trim() || 'Disember 2026',
     });
@@ -659,7 +659,7 @@ export function AdminModal({
   };
 
   const getPdfFileName = () => {
-    const safeVer = (appVersion.trim() || config.appVersion || '3.0').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const safeVer = normalizeAppVersion(appVersion.trim() || config.appVersion, '3.0').replace(/[^a-zA-Z0-9._-]/g, '_');
     return `Panduan_Pengguna_PPPU5_v${safeVer}.pdf`;
   };
 
@@ -667,7 +667,7 @@ export function AdminModal({
     ...config,
     tajuk1: tajuk1.trim() || config.tajuk1,
     footerText: footerText.trim() || config.footerText,
-    appVersion: appVersion.trim() || config.appVersion,
+    appVersion: normalizeAppVersion(appVersion.trim() || config.appVersion, '3.0'),
     editionName: editionName.trim() || config.editionName,
     versionUpdatedAt: versionUpdatedAt.trim() || config.versionUpdatedAt,
     svName: svName.trim() || config.svName,
@@ -728,7 +728,7 @@ export function AdminModal({
         navWithShare.canShare({ files: [pdfFile] })
       ) {
         await navWithShare.share({
-          title: `Panduan Pengguna PPP U5 (Versi ${effectiveCfg.appVersion || '3.0'})`,
+          title: `Panduan Pengguna PPP U5 (Versi ${normalizeAppVersion(effectiveCfg.appVersion, '3.0')})`,
           text: 'Sila rujuk fail PDF Panduan Pengguna (User Guideline) Permohonan Jadual Tugas PPP U5.',
           files: [pdfFile],
         });
@@ -1238,7 +1238,7 @@ export function AdminModal({
                       Kemaskini Versi &amp; Paparan Web (Header / Footer)
                     </h4>
                     <span className="text-[11px] font-bold text-sky-800 bg-white border border-sky-200 px-2 py-0.5 rounded-md tabular-nums">
-                      Versi {appVersion.trim() || '3.0'}
+                      Versi {normalizeAppVersion(appVersion, '3.0')}
                     </span>
                   </div>
 
@@ -1323,7 +1323,7 @@ export function AdminModal({
                     <div className="text-center border-b border-slate-100 pb-2">
                       <p className="font-semibold text-slate-700">{tajuk1.trim() || 'Unit PRPA HTAR'}</p>
                       <p className="font-bold text-sky-800">
-                        Versi {appVersion.trim() || '3.0'}
+                        Versi {normalizeAppVersion(appVersion, '3.0')}
                         {(editionName.trim() || 'Edisi Terkini Dis 2026')
                           ? ` (${editionName.trim() || 'Edisi Terkini Dis 2026'})`
                           : ''}
@@ -1333,7 +1333,7 @@ export function AdminModal({
                       <p className="text-[9.5px] sm:text-[11px] whitespace-nowrap overflow-x-auto">
                         {footerText.trim() || 'Hak Cipta Terpelihara © 2026'},{' '}
                         <span className="font-semibold text-slate-700">
-                          PPPU5 Roster Management System &bull; Versi {appVersion.trim() || '3.0'}
+                          PPPU5 Roster Management System &bull; Versi {normalizeAppVersion(appVersion, '3.0')}
                         </span>
                       </p>
                       <p>Kemaskini Terakhir : {versionUpdatedAt.trim() || 'Disember 2026'}.</p>
@@ -1822,11 +1822,11 @@ export function AdminModal({
                         PERMOHONAN JADUAL TUGAS PPP U5
                       </h4>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        {config.tajuk1 || 'Unit PRPA HTAR'} · Versi {config.appVersion || '3.0'} ({config.editionName || 'Edisi Terkini Dis 2026'})
+                        {config.tajuk1 || 'Unit PRPA HTAR'} · Versi {normalizeAppVersion(config.appVersion, '3.0')} ({config.editionName || 'Edisi Terkini Dis 2026'})
                       </p>
                     </div>
                     <span className="text-[11px] font-bold text-sky-800 bg-white border border-sky-200 px-2.5 py-1 rounded-lg tabular-nums">
-                      v{config.appVersion || '3.0'}
+                      v{normalizeAppVersion(config.appVersion, '3.0')}
                     </span>
                   </div>
                   <div className="pt-2 border-t border-sky-200/70 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -1879,7 +1879,7 @@ export function AdminModal({
                   <div className="space-y-2.5 text-xs">
                     <div className="rounded-lg border border-sky-200 bg-white p-3 space-y-1">
                       <p className="font-bold text-sky-800">
-                        Versi {config.appVersion || '3.0'} ({config.editionName || 'Edisi Terkini Dis 2026'} — Semasa)
+                        Versi {normalizeAppVersion(config.appVersion, '3.0')} ({config.editionName || 'Edisi Terkini Dis 2026'} — Semasa)
                       </p>
                       <ul className="list-disc pl-4 space-y-0.5 text-slate-600 leading-relaxed">
                         <li>Naik taraf sistem kepada <strong>Versi 3.0</strong> dengan paparan Tajuk 1, versi, nama edisi, tarikh/bulan kemaskini, dan footer dinamik mengikut tetapan Admin.</li>
