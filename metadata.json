@@ -1,0 +1,8 @@
+{
+  "name": "Permohonan Jadual Tugas PPP U5",
+  "description": "Sistem Permohonan Jadual Tugas PPP U5 (Edisi Dis 2026) PRPA HTAR V3.0",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

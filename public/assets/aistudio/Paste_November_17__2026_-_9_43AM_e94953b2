@@ -1,0 +1,1051 @@
+
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Permohonan Jadual Tugas PPP U5</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+  <!-- Main Container <--VERSION 2.4.2-->
+  <div class="max-w-4xl mx-auto w-full p-4 sm:p-6 lg:p-8 flex-grow">
+    
+    <!-- Top Header & Logo Banner -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6 text-center relative overflow-hidden">
+      <!-- Admin Panel Trigger Button -->
+      <button type="button" id="openAdminModalBtn" class="absolute top-4 right-4 inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all shadow-sm">
+        <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+        Admin Panel
+      </button>
+
+      <!-- LOGO / BANNER LINK REFERENCE REMARK -->
+      <!-- Original Logo Sizing & Shape with Full Top Banner Fit -->
+      <div class="mb-4 flex justify-center items-center">
+        <img id="appLogoImg" src="https://lh3.googleusercontent.com/d/1C9KN3ncJTrifXlaIP7zgW380zlEb1Kle=w500" alt="Logo Rasmi PPP U5" class="max-h-24 w-auto object-contain rounded-lg shadow-sm" onerror="this.src='https://placehold.co/400x120/0288d1/ffffff?text=PPP+U5+ROSTER';">
+      </div>
+
+      <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">SISTEM PERMOHONAN JADUAL TUGAS PPP U5</h1>
+      <div class="mt-1 flex items-center justify-center gap-2">
+        <p class="text-xs sm:text-sm text-slate-500">Klinik Kesihatan / Fasiliti Kesihatan U5</p>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-100 text-sky-800 border border-sky-200">Versi 2.4 (Edisi Roster 2026/2027)</span>
+      </div>
+
+      <!-- SHEET REFERENCE LINK REMARK -->
+      <!-- Default Spreadsheet Reference Link -->
+      <div class="mt-3 flex flex-wrap justify-center items-center gap-2">
+        <a id="recordSheetLinkBtn" href="https://docs.google.com/spreadsheets/d/1ibZUZIs6vFiwDVhNNa1G_K9Fz4oRmoIgtoGsJg3vp6c/edit?gid=379069437#gid=379069437" target="_blank" class="inline-flex items-center gap-2 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition-colors border border-sky-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          Buka Pautan Google Sheet Rekod Rasmi
+        </a>
+        <!-- Demo Mode: Force Activate Form Button -->
+        <button type="button" id="demoForceActivateBtn" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors border border-amber-300 shadow-sm">
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Mod Demo: Paksa Aktifkan Borang
+        </button>
+      </div>
+    </header>
+
+    <!-- Form Closed / Status Notice Container -->
+    <div id="formClosedNotice" class="hidden bg-red-50 border border-red-200 rounded-2xl p-8 text-center space-y-4 mb-6 shadow-sm">
+      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+      <h2 class="text-xl font-bold text-red-900">Borang Permohonan Telah Ditutup</h2>
+      <p id="closedNoticeReason" class="text-sm text-red-700 max-w-md mx-auto">Tempoh permohonan jadual bertugas bagi tarikh yang ditetapkan telah ditutup atau tarikh akhir telah berlalu.</p>
+      <div class="pt-2">
+        <button type="button" id="closedNoticeDemoForceBtn" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-5 rounded-xl text-xs sm:text-sm shadow-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Mod Demo: Paksa Buka Borang Sekarang
+        </button>
+      </div>
+    </div>
+
+    <!-- Post-Submission Success Confirmation Banner (Shown after form closes on submit) -->
+    <div id="submissionSuccessBanner" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center space-y-4 mb-6 shadow-sm">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h2 class="text-xl font-bold text-emerald-900">Permohonan anda telah berjaya direkod</h2>
+      <p class="text-sm text-emerald-700 max-w-md mx-auto">Rekod permohonan jadual tugas anda telah berjaya disimpan ke dalam sistem Google Sheets.</p>
+      <div class="pt-2 flex flex-col sm:flex-row justify-center gap-3">
+        <a id="bannerSheetPreviewLink" href="https://docs.google.com/spreadsheets/d/1ibZUZIs6vFiwDVhNNa1G_K9Fz4oRmoIgtoGsJg3vp6c/edit?gid=379069437#gid=379069437" target="_blank" class="inline-flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-5 rounded-xl text-xs sm:text-sm shadow-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          Pratonton Rekod di Google Sheets
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Form Wrapper -->
+    <div id="activeFormContainer" class="space-y-6">
+
+      <!-- Top Roster Period Selector & Active Duty Period Display (Before Acknowledgement) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <div class="bg-sky-50/70 rounded-xl p-4 border border-sky-200 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label for="rosterPeriodSelect" class="block text-xs font-bold text-sky-900 uppercase tracking-wide">
+              Pilihan Tempoh Roster Permohonan Tugas (Dis 2026 – Dis 2027) <span class="text-red-500">*</span>
+            </label>
+            <span class="text-[11px] font-semibold text-sky-700 bg-white px-2 py-0.5 rounded border border-sky-200">Interval Bulanan</span>
+          </div>
+          <select id="rosterPeriodSelect" class="w-full rounded-xl border border-sky-300 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+            <!-- Dynamically populated with Dis 2026 - Dis 2027 (1-15 & 16-28/30/31) -->
+          </select>
+        </div>
+
+        <!-- Dynamic Duty Period Display -->
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <span class="text-xs font-bold text-slate-500 uppercase">Tempoh Tugasan Aktif:</span>
+            <p id="displayTempohText" class="text-sm font-bold text-slate-800">01/12/2026 - 15/12/2026</p>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-slate-500 uppercase">Penyelia (SV) Incaj:</span>
+            <p id="displaySvText" class="text-sm font-bold text-sky-700">En. Ravi</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Acknowledgement / Peringatan Penting Checklist -->
+      <div id="step1Container" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <div class="border-b border-slate-100 pb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md">Langkah 1 dari 2</span>
+          <h2 class="text-lg font-bold text-slate-900 mt-2">Peringatan Penting & Syarat Permohonan</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Sila baca dan tandakan kesemua 5 peringatan di bawah untuk meneruskan permohonan.</p>
+        </div>
+
+        <div class="space-y-3.5">
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer">
+            <input type="checkbox" class="warning-check mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">1. Setiap permohonan tertakluk kepada kelulusan ketua fasiliti / penyelia bertugas.</span>
+          </label>
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer">
+            <input type="checkbox" class="warning-check mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">2. Pertukaran syif wajib mendapat persetujuan pegawai pengganti sebelum dihantar.</span>
+          </label>
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer">
+            <input type="checkbox" class="warning-check mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">3. Borang yang dihantar lewat dari tarikh tutup tidak akan dilayan.</span>
+          </label>
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer">
+            <input type="checkbox" class="warning-check mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">4. Pastikan tarikh dan status syif harian diisi dengan tepat dan betul.</span>
+          </label>
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer">
+            <input type="checkbox" class="warning-check mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">5. Segala maklumat yang diberikan adalah benar dan sahih.</span>
+          </label>
+        </div>
+
+        <div id="step1Alert" class="hidden text-xs font-semibold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-200">
+          ⚠️ Sila tandakan kesemua 5 kotak peringatan di atas terlebih dahulu untuk membuka borang permohonan.
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button type="button" id="proceedToFormBtn" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+            <span>Teruskan ke Borang Permohonan</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <!-- Demo Mode: Auto Tick All & Open Form Button -->
+          <button type="button" id="demoAutoTickOpenBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3.5 px-5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Mod Demo: Auto-Tandakan &amp; Buka Borang</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Main Application Form (Initially Hidden) -->
+      <form id="mainApplicationForm" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <div class="border-b border-slate-100 pb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">Langkah 2 dari 2</span>
+          <h2 class="text-lg font-bold text-slate-900 mt-2">Maklumat & Pilihan Syif Tugasan</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Sila lengkapkan butiran peribadi dan jadual harian anda di bawah.</p>
+        </div>
+
+        <!-- Personal Info Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat Emel Rasmi</label>
+            <input type="email" id="emailInput" required placeholder="nama@moh.gov.my" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Telefon Bimbit</label>
+            <input type="text" id="phoneInput" required placeholder="0123456789" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label for="namaPemohon" class="block text-sm font-bold text-slate-800 mb-1">
+            NAMA PEMOHON (SUSUNAN IKUT ABJAD) <span class="text-red-500">*</span>
+          </label>
+          <select id="namaPemohon" name="namaPemohon" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+            <option value="">-- Sila Pilih Nama --</option>
+            <option value="ABD RAHMAN BIN ABD. AZIZ">ABD RAHMAN BIN ABD. AZIZ</option>
+            <option value="AHMAD MUHAIMINZEE BIN ISMAIL">AHMAD MUHAIMINZEE BIN ISMAIL</option>
+            <option value="AIMAN AIZUDDIN BIN MAZLAN">AIMAN AIZUDDIN BIN MAZLAN</option>
+            <option value="CHE NORHISYAM BIN CHE HUSIN">CHE NORHISYAM BIN CHE HUSIN</option>
+            <option value="KAMARUL EFENDI BIN RADZALI">KAMARUL EFENDI BIN RADZALI</option>
+            <option value="MOHAMAD ZAFIR BIN ISA">MOHAMAD ZAFIR BIN ISA</option>
+            <option value="MOHAMMAD HADI BIN ANUAR">MOHAMMAD HADI BIN ANUAR</option>
+            <option value="MOHAMMAD ZULHAKIMI BIN MARUDING">MOHAMMAD ZULHAKIMI BIN MARUDING</option>
+            <option value="MOHD AKMAL HADI BIN ZAKARIA">MOHD AKMAL HADI BIN ZAKARIA</option>
+            <option value="MOHD AMIRUN BIN AHMAD">MOHD AMIRUN BIN AHMAD</option>
+            <option value="MOHD IMRAN BIN MOHD NOR">MOHD IMRAN BIN MOHD NOR</option>
+            <option value="MUHAMAD AZRI BIN AZIZ">MUHAMAD AZRI BIN AZIZ</option>
+            <option value="MUHAMAD NABIL BIN OTHMAN">MUHAMAD NABIL BIN OTHMAN</option>
+            <option value="MUHAMMAD HAZIM BIN NASARUDDIN">MUHAMMAD HAZIM BIN NASARUDDIN</option>
+            <option value="MUHAMMAD SHAHRUL AZWAN BIN KAMARUDDIN">MUHAMMAD SHAHRUL AZWAN BIN KAMARUDDIN</option>
+            <option value="MUHAMMAD SYAFIQ IZZAT BIN ZOLNALDI">MUHAMMAD SYAFIQ IZZAT BIN ZOLNALDI</option>
+            <option value="WAN MOHD RIDZUAN BIN WAN BERAHIM">WAN MOHD RIDZUAN BIN WAN BERAHIM</option>
+            <option value="ABDUL HAMIDULLAH BIN ABDUL MOMEN">ABDUL HAMIDULLAH BIN ABDUL MOMEN</option>
+            <option value="ALIMMIN TAQUIDDIN BIN RUSLI">ALIMMIN TAQUIDDIN BIN RUSLI</option>
+            <option value="MUHAMMAD NASIRUDDIN NAZMI BIN NAZARI">MUHAMMAD NASIRUDDIN NAZMI BIN NAZARI</option>
+            <option value="MOHD NUR AL HAFIS BIN SAHDI">MOHD NUR AL HAFIS BIN SAHDI</option>
+            <option value="FLORINA LOUIS">FLORINA LOUIS</option>
+            <option value="MEDILITA MUNGGIANG">MEDILITA MUNGGIANG</option>
+            <option value="AMIRUL AFANDI BIN MOHD KHAZAHIR">AMIRUL AFANDI BIN MOHD KHAZAHIR</option>
+            <option value="MOHAMMAD AMIRRUDDIN BIN MOHAMAD ISA">MOHAMMAD AMIRRUDDIN BIN MOHAMAD ISA</option>
+            <option value="VERSHANE STONE">VERSHANE STONE</option>
+            <option value="NUR WAHIDATUN BALQIS BINTI MOHD YUSUFF">NUR WAHIDATUN BALQIS BINTI MOHD YUSUFF</option>
+            <option value="BRANDON RYAN ANASTASIUS">BRANDON RYAN ANASTASIUS</option>
+            <option value="MOHAMAD HASNAWIE HAIMAN BIN NORDIN">MOHAMAD HASNAWIE HAIMAN BIN NORDIN</option>
+            <option value="MUHAMMAD DANIAL HAKIMI BIN SUFIAN">MUHAMMAD DANIAL HAKIMI BIN SUFIAN</option>
+            <option value="MUHAMMAD HAFIZZAT AIMAN BIN MOHD YUNUS">MUHAMMAD HAFIZZAT AIMAN BIN MOHD YUNUS</option>
+            <option value="SITI NURAISYAH BINTI MOHAMAD">SITI NURAISYAH BINTI MOHAMAD</option>
+            <option value="NURUL SYAZWANI BINTI OSMAN">NURUL SYAZWANI BINTI OSMAN</option>
+          </select>
+        </div>
+
+        <!-- Daily Dates & Shifts Container -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Pilihan Syif Tarikh Harian</h3>
+          <div id="dynamicDateFieldsContainer" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+            <!-- Dynamically injected date rows -->
+          </div>
+        </div>
+
+        <!-- Surat Kelulusan Upload / Link Field -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Pautan / Rujukan Surat Kelulusan (Jika Berkaitan)</label>
+          <input type="text" id="suratKelulusanInput" placeholder="https://drive.google.com/... atau Cuti Diluluskan" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+        </div>
+
+        <!-- Email Copy Option -->
+        <div class="flex items-center gap-3 pt-2">
+          <input type="checkbox" id="sendEmailCopyCheck" class="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+          <label for="sendEmailCopyCheck" class="text-xs sm:text-sm font-medium text-slate-700 cursor-pointer">Hantar salinan ringkasan permohonan ke emel saya.</label>
+        </div>
+
+        <!-- Submit & WhatsApp Actions -->
+        <div class="pt-4 flex flex-col sm:flex-row gap-3">
+          <button type="submit" id="submitFormBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Hantar Permohonan & Simpan ke Sheets
+          </button>
+          <button type="button" id="whatsappSummaryBtn" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold py-3.5 px-6 rounded-xl border border-emerald-300 transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Hantar via WhatsApp
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    Hak Cipta Terpelihara &copy; 2026 PPP U5 Roster Management System &bull; <span class="font-semibold text-slate-600">Versi 2.4 (Edisi Roster 2026/2027)</span>
+  </footer>
+
+  <!-- Admin Login & Settings Modal -->
+  <div id="adminModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 sticky top-0 bg-white z-10">
+        <div class="flex items-center gap-2 text-sky-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <h3 class="text-lg font-bold text-slate-900">Log Masuk &amp; Tetapan Admin</h3>
+        </div>
+        <button type="button" id="closeAdminModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Google Auth Login Prompt -->
+      <div id="adminLoginPrompt" class="py-8 text-center space-y-6">
+        <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <div class="space-y-2">
+          <h4 class="text-xl font-bold text-slate-900">Pengesahan Akaun Google Diperlukan</h4>
+          <p class="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">Sila log masuk menggunakan akaun Google rasmi anda untuk mengakses panel tetapan Admin Papan Pemuka.</p>
+        </div>
+        <div class="pt-2">
+          <button type="button" id="googleAuthLoginBtn" class="inline-flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-xl border border-slate-300 shadow-sm transition-all">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.2v3.14C3.21 21.35 7.28 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.61H1.2C.44 8.16 0 9.92 0 11.8s.44 3.64 1.2 5.19l4.08-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.28 0 3.21 2.65 1.2 6.61l4.08 3.14c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
+            Log Masuk dengan Google
+          </button>
+        </div>
+        <p id="googleLoginError" class="hidden text-xs text-red-600 font-medium"></p>
+      </div>
+
+      <!-- Admin Dashboard View -->
+      <div id="adminDashboardView" class="hidden space-y-5">
+        <div class="flex items-center justify-between bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <div class="flex items-center gap-3">
+            <div id="adminUserAvatar" class="w-10 h-10 bg-sky-600 text-white font-bold rounded-full flex items-center justify-center">A</div>
+            <div>
+              <p id="adminUserName" class="text-xs sm:text-sm font-bold text-slate-900">Admin Rasmi</p>
+              <p id="adminUserEmail" class="text-xs text-slate-500">admin@moh.gov.my</p>
+            </div>
+          </div>
+          <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full">Disahkan</span>
+        </div>
+
+        <div class="space-y-4 pt-2">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tetapan Tempoh &amp; Jadual Tugas</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tarikh Mula Tugasan</label>
+              <input type="date" id="adminStartDate" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tarikh Tamat Tugasan</label>
+              <input type="date" id="adminEndDate" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tarikh Tutup Permohonan</label>
+              <input type="date" id="adminClosingDate" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penyelia (SV) Incaj</label>
+              <input type="text" id="adminSvName" value="En. Ravi" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Borang</label>
+            <select id="adminForceStatus" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+              <option value="AUTO">Automatik (Mengikut Tarikh Tutup)</option>
+              <option value="OPEN">Paksa BUKA Borang</option>
+              <option value="CLOSED">Paksa TUTUP Borang</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Pautan URL Rekod Google Sheets</label>
+            <input type="text" id="adminRecordSheetUrl" value="https://docs.google.com/spreadsheets/d/1ibZUZIs6vFiwDVhNNa1G_K9Fz4oRmoIgtoGsJg3vp6c/edit?gid=379069437#gid=379069437" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Pautan URL Logo / Banner</label>
+            <input type="text" id="adminLogoUrl" value="https://lh3.googleusercontent.com/d/1C9KN3ncJTrifXlaIP7zgW380zlEb1Kle=w500" class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          </div>
+
+          <button type="button" id="saveAdminConfigBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md transition-all">
+            Simpan Tetapan &amp; Kemaskini Sistem
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal / Alert Box -->
+  <div id="notificationModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 text-center space-y-4">
+      <div id="notifIconWrapper" class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h3 id="notifTitle" class="text-lg font-bold text-slate-900">Berjaya!</h3>
+      <p id="notifMessage" class="text-xs sm:text-sm text-slate-600">Maklumat telah disimpan.</p>
+      <div id="notifSheetPreviewBox" class="hidden pt-1">
+        <a id="notifSheetPreviewLink" href="https://docs.google.com/spreadsheets/d/1ibZUZIs6vFiwDVhNNa1G_K9Fz4oRmoIgtoGsJg3vp6c/edit?gid=379069437#gid=379069437" target="_blank" class="inline-flex items-center justify-center gap-2 w-full bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold py-2.5 px-4 rounded-xl border border-sky-200 text-xs transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          Pratonton Rekod di Google Sheets
+        </a>
+      </div>
+      <button type="button" id="closeNotifBtn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition-all">
+        Tutup
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom System Admin Email Modal -->
+  <div id="customAdminEmailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900">Pengesahan Log Masuk Admin</h3>
+      <p class="text-xs text-slate-600">Sila masukkan alamat emel rasmi Google Admin anda untuk meneruskan ke papan pemuka tetapan:</p>
+      <input type="email" id="customAdminEmailField" placeholder="admin@moh.gov.my" class="w-full text-sm px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+      <p id="customAdminEmailError" class="hidden text-xs text-red-600 font-medium"></p>
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="cancelCustomAdminEmailBtn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-all">Batal</button>
+        <button type="button" id="confirmCustomAdminEmailBtn" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 rounded-xl transition-all">Sahkan &amp; Masuk</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const daysOfWeek = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+    const shiftOptions = [
+      { value: '', label: '-- Pilih Status / Syif --' },
+      { value: 'CR', label: 'CR' },
+      { value: 'CG', label: 'CG' },
+      { value: 'HKA OFF', label: 'HKA OFF' },
+      { value: 'HK OFF', label: 'HK OFF' },
+      { value: 'PG SHJ', label: 'PG SHJ' },
+      { value: 'PT SHJ', label: 'PT SHJ' },
+      { value: 'KURSUS', label: 'KURSUS' },
+      { value: 'M.TEAM', label: 'M.TEAM' },
+      { value: 'MESYUARAT', label: 'MESYUARAT' },
+      { value: 'LAIN-LAIN', label: 'LAIN-LAIN' }
+    ];
+
+    // Global Config & Default State
+    let appConfig = {
+      startDate: "2026-12-01",
+      endDate: "2026-12-15",
+      closingDate: "2026-12-31",
+      forceStatus: "OPEN",
+      svName: "En. Ravi",
+      recordSpreadsheetUrl: "https://docs.google.com/spreadsheets/d/1ibZUZIs6vFiwDVhNNa1G_K9Fz4oRmoIgtoGsJg3vp6c/edit?gid=379069437#gid=379069437",
+      logoUrl: "https://lh3.googleusercontent.com/d/1C9KN3ncJTrifXlaIP7zgW380zlEb1Kle=w500"
+    };
+
+    let generatedDateColumns = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateRosterPeriods();
+      fetchServerConfig();
+      setupEventListeners();
+    });
+
+    function populateRosterPeriods() {
+      const selectEl = document.getElementById('rosterPeriodSelect');
+      if (!selectEl) return;
+
+      const monthNames = [
+        'Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun',
+        'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'
+      ];
+
+      // Generate intervals from Disember 2026 (year 2026, month 11) to Disember 2027 (year 2027, month 11)
+      const periods = [];
+      for (let year = 2026; year <= 2027; year++) {
+        const startMonth = (year === 2026) ? 11 : 0;
+        const endMonth = 11;
+        for (let m = startMonth; m <= endMonth; m++) {
+          const mStr = String(m + 1).padStart(2, '0');
+          const lastDay = new Date(year, m + 1, 0).getDate(); // 28, 30, or 31 accurately
+
+          // Interval 1: 1 - 15
+          const s1 = `${year}-${mStr}-01`;
+          const e1 = `${year}-${mStr}-15`;
+          periods.push({
+            value: `${s1}|${e1}`,
+            label: `${monthNames[m]} ${year} (01/${mStr}/${year} – 15/${mStr}/${year})`
+          });
+
+          // Interval 2: 16 - end of month (28/30/31)
+          const s2 = `${year}-${mStr}-16`;
+          const e2 = `${year}-${mStr}-${String(lastDay).padStart(2, '0')}`;
+          periods.push({
+            value: `${s2}|${e2}`,
+            label: `${monthNames[m]} ${year} (16/${mStr}/${year} – ${lastDay}/${mStr}/${year})`
+          });
+        }
+      }
+
+      selectEl.innerHTML = periods.map(p => `<option value="${p.value}">${p.label}</option>`).join('');
+      syncPeriodDropdownWithConfig();
+    }
+
+    function syncPeriodDropdownWithConfig() {
+      const selectEl = document.getElementById('rosterPeriodSelect');
+      if (!selectEl) return;
+      const targetVal = `${appConfig.startDate}|${appConfig.endDate}`;
+      const exists = Array.from(selectEl.options).some(opt => opt.value === targetVal);
+      if (exists) {
+        selectEl.value = targetVal;
+      }
+    }
+
+    function fetchServerConfig() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.recordSpreadsheetUrl) {
+              appConfig = Object.assign({}, appConfig, res);
+            }
+            applyConfigToUI();
+            evaluateFormStatus();
+            buildDateShiftRows();
+          })
+          .withFailureHandler(() => {
+            applyConfigToUI();
+            evaluateFormStatus();
+            buildDateShiftRows();
+          })
+          .doGet({ parameter: { action: "getConfig" } });
+      } else {
+        applyConfigToUI();
+        evaluateFormStatus();
+        buildDateShiftRows();
+      }
+    }
+
+    function applyConfigToUI() {
+      if (appConfig.recordSpreadsheetUrl) {
+        const linkBtn = document.getElementById('recordSheetLinkBtn');
+        if (linkBtn) linkBtn.href = appConfig.recordSpreadsheetUrl;
+        const bannerLink = document.getElementById('bannerSheetPreviewLink');
+        if (bannerLink) bannerLink.href = appConfig.recordSpreadsheetUrl;
+      }
+      if (appConfig.logoUrl) {
+        const logoImg = document.getElementById('appLogoImg');
+        if (logoImg) logoImg.src = appConfig.logoUrl;
+      }
+      syncPeriodDropdownWithConfig();
+      document.getElementById('displayTempohText').textContent = formatDateDisplay(appConfig.startDate) + " - " + formatDateDisplay(appConfig.endDate);
+      document.getElementById('displaySvText').textContent = appConfig.svName;
+    }
+
+    function evaluateFormStatus() {
+      const today = new Date().toISOString().split('T')[0];
+      let isOpen = true;
+      let reason = "";
+
+      if (appConfig.forceStatus === "OPEN") {
+        isOpen = true;
+      } else if (appConfig.forceStatus === "CLOSED") {
+        isOpen = false;
+        reason = "Borang ditutup secara manual oleh pentadbir sistem.";
+      } else {
+        if (appConfig.closingDate && today > appConfig.closingDate) {
+          isOpen = false;
+          reason = "Tarikh tutup permohonan (" + formatDateDisplay(appConfig.closingDate) + ") telah tamat.";
+        }
+      }
+
+      const closedNotice = document.getElementById('formClosedNotice');
+      const activeForm = document.getElementById('activeFormContainer');
+      const noticeReason = document.getElementById('closedNoticeReason');
+
+      if (!isOpen) {
+        if (closedNotice) closedNotice.classList.remove('hidden');
+        if (activeForm) activeForm.classList.add('hidden');
+        if (noticeReason) noticeReason.textContent = reason || "Tempoh permohonan telah ditutup.";
+      } else {
+        if (closedNotice) closedNotice.classList.add('hidden');
+        if (activeForm) activeForm.classList.remove('hidden');
+      }
+    }
+
+    function buildDateShiftRows() {
+      const container = document.getElementById('dynamicDateFieldsContainer');
+      if (!container) return;
+      container.innerHTML = "";
+      generatedDateColumns = [];
+
+      const startParts = (appConfig.startDate || "2026-12-01").split('-');
+      const endParts = (appConfig.endDate || "2026-12-15").split('-');
+      const start = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
+      const end = new Date(Number(endParts[0]), Number(endParts[1]) - 1, Number(endParts[2]));
+
+      let curr = new Date(start);
+      while (curr <= end) {
+        const dateStr = formatDateDisplayIso(curr);
+        const dayName = daysOfWeek[curr.getDay()];
+        const fullColTitle = dateStr + " (" + dayName + ")";
+        generatedDateColumns.push(fullColTitle);
+
+        const optionsHtml = shiftOptions.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+
+        const rowDiv = document.createElement('div');
+        rowDiv.className = "p-3 rounded-xl border border-slate-200 bg-white space-y-2";
+        rowDiv.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-xs font-bold text-slate-800">${fullColTitle}</span>
+            <select class="shift-select text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-sky-500 focus:outline-none" data-date="${fullColTitle}">
+              ${optionsHtml}
+            </select>
+          </div>
+          <div class="conditional-date-box hidden pt-1">
+            <label class="block text-[11px] font-semibold text-sky-700 mb-1">Pilih Tarikh Pilihan / Gantian:</label>
+            <input type="date" class="conditional-date-input w-full text-xs px-3 py-1.5 rounded-lg border border-sky-300 bg-sky-50/40 focus:ring-1 focus:ring-sky-500 focus:outline-none">
+          </div>
+          <div class="conditional-input-box hidden pt-1">
+            <input type="text" placeholder="Nyatakan catatan / nama kursus..." class="conditional-val-input w-full text-xs px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 focus:ring-1 focus:ring-sky-500 focus:outline-none">
+          </div>
+        `;
+
+        const selectEl = rowDiv.querySelector('.shift-select');
+        const condDateBox = rowDiv.querySelector('.conditional-date-box');
+        const condDateInput = rowDiv.querySelector('.conditional-date-input');
+        const condBox = rowDiv.querySelector('.conditional-input-box');
+        const condValInput = rowDiv.querySelector('.conditional-val-input');
+
+        selectEl.addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val === "CG" || val === "HKA OFF" || val === "HK OFF") {
+            condDateBox.classList.remove('hidden');
+            condBox.classList.add('hidden');
+            condValInput.value = "";
+          } else if (val === "KURSUS" || val === "LAIN-LAIN") {
+            condBox.classList.remove('hidden');
+            condDateBox.classList.add('hidden');
+            condDateInput.value = "";
+          } else {
+            condDateBox.classList.add('hidden');
+            condBox.classList.add('hidden');
+            condDateInput.value = "";
+            condValInput.value = "";
+          }
+        });
+
+        container.appendChild(rowDiv);
+        curr.setDate(curr.getDate() + 1);
+      }
+    }
+
+    function setupEventListeners() {
+      // Front-end Roster Period Selector listener
+      const rosterPeriodSelect = document.getElementById('rosterPeriodSelect');
+      if (rosterPeriodSelect) {
+        rosterPeriodSelect.addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val && val.includes('|')) {
+            const parts = val.split('|');
+            appConfig.startDate = parts[0];
+            appConfig.endDate = parts[1];
+            const formattedRange = formatDateDisplay(appConfig.startDate) + " - " + formatDateDisplay(appConfig.endDate);
+            document.getElementById('displayTempohText').textContent = formattedRange;
+            buildDateShiftRows();
+            showNotification(
+              "Pengesahan Tempoh Tugasan",
+              "Anda telah memilih interval tarikh tugasan: " + formattedRange + ". Sila pastikan anda menanda pengesahan peringatan sebelum meneruskan permohonan.",
+              "success",
+              false
+            );
+          }
+        });
+      }
+
+      // Step 1 Proceed Button
+      const proceedBtn = document.getElementById('proceedToFormBtn');
+      if (proceedBtn) {
+        proceedBtn.addEventListener('click', () => {
+          const checks = document.querySelectorAll('.warning-check');
+          let allChecked = true;
+          checks.forEach(chk => {
+            if (!chk.checked) allChecked = false;
+          });
+
+          const step1Alert = document.getElementById('step1Alert');
+          if (!allChecked) {
+            if (step1Alert) step1Alert.classList.remove('hidden');
+            return;
+          }
+          if (step1Alert) step1Alert.classList.add('hidden');
+
+          document.getElementById('step1Container').classList.add('hidden');
+          const mainForm = document.getElementById('mainApplicationForm');
+          mainForm.classList.remove('hidden');
+          const nameSelect = document.getElementById('namaPemohon');
+          if (nameSelect) nameSelect.focus();
+        });
+      }
+
+      // Demo Mode: Force Activate Form (Top Header & Closed Notice)
+      const forceActivateFormHandler = () => {
+        appConfig.forceStatus = "OPEN";
+        evaluateFormStatus();
+        const successBanner = document.getElementById('submissionSuccessBanner');
+        if (successBanner) successBanner.classList.add('hidden');
+        const activeForm = document.getElementById('activeFormContainer');
+        if (activeForm) activeForm.classList.remove('hidden');
+        showNotification("Mod Demo Aktif", "Borang permohonan telah diaktifkan secara paksa untuk tujuan pengujian demo.", "success", false);
+      };
+
+      const demoForceActivateBtn = document.getElementById('demoForceActivateBtn');
+      if (demoForceActivateBtn) {
+        demoForceActivateBtn.addEventListener('click', forceActivateFormHandler);
+      }
+
+      const closedNoticeDemoForceBtn = document.getElementById('closedNoticeDemoForceBtn');
+      if (closedNoticeDemoForceBtn) {
+        closedNoticeDemoForceBtn.addEventListener('click', forceActivateFormHandler);
+      }
+
+      // Demo Mode: Auto-Tick All Checklist & Open Form
+      const demoAutoTickOpenBtn = document.getElementById('demoAutoTickOpenBtn');
+      if (demoAutoTickOpenBtn) {
+        demoAutoTickOpenBtn.addEventListener('click', () => {
+          const checks = document.querySelectorAll('.warning-check');
+          checks.forEach(chk => {
+            chk.checked = true;
+          });
+          const step1Alert = document.getElementById('step1Alert');
+          if (step1Alert) step1Alert.classList.add('hidden');
+
+          document.getElementById('step1Container').classList.add('hidden');
+          const mainForm = document.getElementById('mainApplicationForm');
+          mainForm.classList.remove('hidden');
+          const nameSelect = document.getElementById('namaPemohon');
+          if (nameSelect) nameSelect.focus();
+        });
+      }
+
+      // Admin Modal Open / Close
+      const openAdminBtn = document.getElementById('openAdminModalBtn');
+      const closeAdminBtn = document.getElementById('closeAdminModalBtn');
+      const adminModal = document.getElementById('adminModal');
+
+      if (openAdminBtn) {
+        openAdminBtn.addEventListener('click', () => {
+          adminModal.classList.remove('hidden');
+          adminModal.classList.add('flex');
+          checkGoogleAuthSession();
+        });
+      }
+
+      if (closeAdminBtn) {
+        closeAdminBtn.addEventListener('click', () => {
+          adminModal.classList.add('hidden');
+          adminModal.classList.remove('flex');
+        });
+      }
+
+      // Google Auth Login Button in Admin Modal
+      const authLoginBtn = document.getElementById('googleAuthLoginBtn');
+      if (authLoginBtn) {
+        authLoginBtn.addEventListener('click', () => {
+          const errEl = document.getElementById('googleLoginError');
+          if (errEl) errEl.classList.add('hidden');
+
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            try {
+              google.script.run
+                .withSuccessHandler(res => {
+                  if (res && res.email) {
+                    showAdminDashboard(res.name, res.email);
+                  } else {
+                    promptDirectAdminLogin();
+                  }
+                })
+                .withFailureHandler(() => {
+                  promptDirectAdminLogin();
+                })
+                .getGoogleUserSession();
+            } catch (e) {
+              promptDirectAdminLogin();
+            }
+          } else {
+            promptDirectAdminLogin();
+          }
+        });
+      }
+
+      // Save Admin Config Button
+      const saveConfigBtn = document.getElementById('saveAdminConfigBtn');
+      if (saveConfigBtn) {
+        saveConfigBtn.addEventListener('click', () => {
+          const newConfig = {
+            startDate: document.getElementById('adminStartDate').value || appConfig.startDate,
+            endDate: document.getElementById('adminEndDate').value || appConfig.endDate,
+            closingDate: document.getElementById('adminClosingDate').value || appConfig.closingDate,
+            forceStatus: document.getElementById('adminForceStatus').value || "AUTO",
+            svName: document.getElementById('adminSvName').value || "En. Ravi",
+            recordSpreadsheetUrl: document.getElementById('adminRecordSheetUrl').value || appConfig.recordSpreadsheetUrl,
+            logoUrl: document.getElementById('adminLogoUrl').value || appConfig.logoUrl
+          };
+
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(() => {
+                appConfig = newConfig;
+                applyConfigToUI();
+                evaluateFormStatus();
+                buildDateShiftRows();
+                adminModal.classList.add('hidden');
+                adminModal.classList.remove('flex');
+                showNotification("Berjaya", "Tetapan admin dan pautan Google Sheets telah berjaya dikemaskini!", "success");
+              })
+              .withFailureHandler(err => {
+                showNotification("Ralat", "Gagal menyimpan tetapan: " + err, "error");
+              })
+              .doPost({ postData: { contents: JSON.stringify({ action: "saveConfig", config: newConfig }) } });
+          } else {
+            appConfig = newConfig;
+            applyConfigToUI();
+            evaluateFormStatus();
+            buildDateShiftRows();
+            adminModal.classList.add('hidden');
+            adminModal.classList.remove('flex');
+            showNotification("Berjaya", "Tetapan tempatan dikemaskini.", "success");
+          }
+        });
+      }
+
+      // Form Submit Button
+      const mainForm = document.getElementById('mainApplicationForm');
+      if (mainForm) {
+        mainForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          submitApplicationData(false);
+        });
+      }
+
+      // WhatsApp Summary Button
+      const waBtn = document.getElementById('whatsappSummaryBtn');
+      if (waBtn) {
+        waBtn.addEventListener('click', () => {
+          submitApplicationData(true);
+        });
+      }
+
+      // Close Notification Modal Button
+      const closeNotifBtn = document.getElementById('closeNotifBtn');
+      if (closeNotifBtn) {
+        closeNotifBtn.addEventListener('click', () => {
+          document.getElementById('notificationModal').classList.add('hidden');
+          document.getElementById('notificationModal').classList.remove('flex');
+        });
+      }
+
+      // Custom System Admin Email Modal Buttons
+      const cancelCustomEmailBtn = document.getElementById('cancelCustomAdminEmailBtn');
+      const confirmCustomEmailBtn = document.getElementById('confirmCustomAdminEmailBtn');
+      const customEmailModal = document.getElementById('customAdminEmailModal');
+      if (cancelCustomEmailBtn) {
+        cancelCustomEmailBtn.addEventListener('click', () => {
+          customEmailModal.classList.add('hidden');
+          customEmailModal.classList.remove('flex');
+        });
+      }
+      if (confirmCustomEmailBtn) {
+        confirmCustomEmailBtn.addEventListener('click', () => {
+          const val = document.getElementById('customAdminEmailField').value.trim();
+          const errEl = document.getElementById('customAdminEmailError');
+          if (val && val.includes('@')) {
+            errEl.classList.add('hidden');
+            customEmailModal.classList.add('hidden');
+            customEmailModal.classList.remove('flex');
+            const name = val.split('@')[0];
+            const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+            showAdminDashboard(formattedName, val);
+          } else {
+            errEl.textContent = "Sila masukkan alamat emel Google yang sah.";
+            errEl.classList.remove('hidden');
+          }
+        });
+      }
+    }
+
+    function checkGoogleAuthSession() {
+      const loginPrompt = document.getElementById('adminLoginPrompt');
+      const adminDashboard = document.getElementById('adminDashboardView');
+      const errorEl = document.getElementById('googleLoginError');
+
+      if (!loginPrompt || !adminDashboard) return;
+
+      loginPrompt.classList.remove('hidden');
+      adminDashboard.classList.add('hidden');
+      if (errorEl) errorEl.classList.add('hidden');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.email) {
+              showAdminDashboard(res.name, res.email);
+            }
+          })
+          .withFailureHandler(() => {})
+          .getGoogleUserSession();
+      }
+    }
+
+    function promptDirectAdminLogin() {
+      const customModal = document.getElementById('customAdminEmailModal');
+      const field = document.getElementById('customAdminEmailField');
+      const errEl = document.getElementById('customAdminEmailError');
+      if (field) field.value = "";
+      if (errEl) errEl.classList.add('hidden');
+      if (customModal) {
+        customModal.classList.remove('hidden');
+        customModal.classList.add('flex');
+        if (field) field.focus();
+      }
+    }
+
+    function showAdminDashboard(name, email) {
+      document.getElementById('adminLoginPrompt').classList.add('hidden');
+      document.getElementById('adminDashboardView').classList.remove('hidden');
+      document.getElementById('adminUserName').textContent = name || "Admin Rasmi";
+      document.getElementById('adminUserEmail').textContent = email;
+      const avatarEl = document.getElementById('adminUserAvatar');
+      if (avatarEl) avatarEl.textContent = (name || "A").charAt(0).toUpperCase();
+
+      document.getElementById('adminStartDate').value = appConfig.startDate;
+      document.getElementById('adminEndDate').value = appConfig.endDate;
+      document.getElementById('adminClosingDate').value = appConfig.closingDate;
+      document.getElementById('adminForceStatus').value = appConfig.forceStatus;
+      document.getElementById('adminSvName').value = appConfig.svName;
+      document.getElementById('adminRecordSheetUrl').value = appConfig.recordSpreadsheetUrl;
+      document.getElementById('adminLogoUrl').value = appConfig.logoUrl;
+    }
+
+    function submitApplicationData(openWhatsapp) {
+      const email = document.getElementById('emailInput').value.trim();
+      const phone = document.getElementById('phoneInput').value.trim();
+      const name = document.getElementById('namaPemohon').value.trim().toUpperCase();
+      const suratKelulusan = document.getElementById('suratKelulusanInput').value.trim();
+      const sendEmailCopy = document.getElementById('sendEmailCopyCheck').checked;
+
+      if (!email || !phone || !name) {
+        showNotification("Perhatian", "Sila lengkapkan emel, no. telefon, dan pilih nama pemohon daripada senarai.", "error", false);
+        return;
+      }
+
+      const rows = document.querySelectorAll('#dynamicDateFieldsContainer > div');
+      let orderedShifts = [];
+      let summaryLines = [];
+
+      rows.forEach(row => {
+        const sel = row.querySelector('.shift-select');
+        const condDateInput = row.querySelector('.conditional-date-input');
+        const condInput = row.querySelector('.conditional-val-input');
+        const dateKey = sel.getAttribute('data-date');
+        let val = sel.value;
+        let waVal = val;
+
+        if (val && condDateInput && condDateInput.value.trim() !== "") {
+          const formattedPickedDate = formatDateDisplay(condDateInput.value.trim());
+          // Simpan dalam satu kolum dengan baris baharu (newline)
+          val += "\nTarikh Pilihan: " + formattedPickedDate;
+          waVal += " (Tarikh Pilihan: " + formattedPickedDate + ")";
+        } else if (val && condInput && condInput.value.trim() !== "") {
+          val += "\n(" + condInput.value.trim() + ")";
+          waVal += " (" + condInput.value.trim() + ")";
+        }
+
+        orderedShifts.push(val);
+        if (val) {
+          summaryLines.push("• " + dateKey + ": " + waVal);
+        }
+      });
+
+      const tempohTugasan = formatDateDisplay(appConfig.startDate) + " - " + formatDateDisplay(appConfig.endDate);
+
+      const payload = {
+        action: "submitApplication",
+        timestamp: new Date().toISOString(),
+        email: email,
+        noTelefon: phone,
+        namaPemohon: name,
+        tempohTugasan: tempohTugasan,
+        dateColumns: generatedDateColumns,
+        orderedShifts: orderedShifts,
+        suratKelulusan: suratKelulusan,
+        sendEmailCopy: sendEmailCopy,
+        recordSpreadsheetUrl: appConfig.recordSpreadsheetUrl
+      };
+
+      if (openWhatsapp) {
+        let waText = "*PERMOHONAN JADUAL TUGAS PPP U5*\n\n" +
+                     "*Tempoh:* " + tempohTugasan + "\n" +
+                     "*Nama:* " + name + "\n" +
+                     "*Tel:* " + phone + "\n" +
+                     "*Emel:* " + email + "\n";
+        if (suratKelulusan) {
+          waText += "*Surat Kelulusan:* " + suratKelulusan + "\n";
+        }
+        waText += "\n*Pilihan Syif Harian:*\n" + (summaryLines.length > 0 ? summaryLines.join("\n") : "- Tiada syif khusus dipilih");
+        
+        const encoded = encodeURIComponent(waText);
+        window.open("https://api.whatsapp.com/send?phone=60100000000&text=" + encoded, "_blank");
+      }
+
+      const handleSuccessRecord = (customMessage) => {
+        // Tutup borang selepas berjaya dihantar dan paparkan banner pengesahan
+        const activeFormContainer = document.getElementById('activeFormContainer');
+        if (activeFormContainer) activeFormContainer.classList.add('hidden');
+        const successBanner = document.getElementById('submissionSuccessBanner');
+        const bannerLink = document.getElementById('bannerSheetPreviewLink');
+        if (bannerLink) bannerLink.href = appConfig.recordSpreadsheetUrl;
+        if (successBanner) successBanner.classList.remove('hidden');
+
+        showNotification("Permohonan Berjaya!", customMessage || "Permohonan anda telah berjaya direkod.", "success", true);
+      };
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.status === "success") {
+              handleSuccessRecord(res.message);
+            } else {
+              showNotification("Ralat", "Gagal menyimpan: " + (res.message || "Sila cuba lagi"), "error", false);
+            }
+          })
+          .withFailureHandler(err => {
+            showNotification("Ralat Rangkaian", "Gagal menghubungi pelayan: " + err, "error", false);
+          })
+          .doPost({ postData: { contents: JSON.stringify(payload) } });
+      } else {
+        handleSuccessRecord();
+      }
+    }
+
+    function showNotification(title, message, type, showSheetPreview) {
+      const modal = document.getElementById('notificationModal');
+      document.getElementById('notifTitle').textContent = title;
+      document.getElementById('notifMessage').textContent = message;
+      
+      const previewBox = document.getElementById('notifSheetPreviewBox');
+      const previewLink = document.getElementById('notifSheetPreviewLink');
+      if (previewBox && previewLink) {
+        if (showSheetPreview) {
+          previewLink.href = appConfig.recordSpreadsheetUrl;
+          previewBox.classList.remove('hidden');
+        } else {
+          previewBox.classList.add('hidden');
+        }
+      }
+
+      const iconWrapper = document.getElementById('notifIconWrapper');
+      if (type === "error") {
+        iconWrapper.className = "w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto";
+        iconWrapper.innerHTML = `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+      } else {
+        iconWrapper.className = "w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto";
+        iconWrapper.innerHTML = `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function formatDateDisplay(isoStr) {
+      if (!isoStr) return "";
+      const parts = isoStr.split('-');
+      if (parts.length === 3) {
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
+      }
+      return isoStr;
+    }
+
+    function formatDateDisplayIso(dateObj) {
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const y = dateObj.getFullYear();
+      return d + "/" + m + "/" + y;
+    }
+  </script>
+</body>
+</html>
