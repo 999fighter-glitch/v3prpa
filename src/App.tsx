@@ -379,6 +379,8 @@ export default function App() {
   const [phoneLookupStatus, setPhoneLookupStatus] = useState<'idle' | 'checking' | 'found' | 'missing'>(
     initialFormDraft?.phoneLookupStatus ?? 'idle'
   );
+  const [isSavingPhone, setIsSavingPhone] = useState(false);
+  const [phoneSavedNote, setPhoneSavedNote] = useState('');
   const [dailySelections, setDailySelections] = useState<Record<string, DailyShiftSelection>>(
     initialFormDraft?.dailySelections ?? {}
   );
@@ -1014,7 +1016,7 @@ export default function App() {
       'Tiada Nombor Telefon Dalam Simpanan',
       `Tiada nombor telefon dalam simpanan untuk nama ${
         staffName ? `"${staffName}"` : 'ini'
-      }.\n\nSila masukkan nombor telefon anda. Nombor telefon akan disimpan pada respon pertama semasa menghantar borang.`,
+      }.\n\nSila masukkan nombor telefon anda dan tekan butang Sahkan untuk terus menyimpan nama serta nombor telefon ke helaian Senarai Nama PPPU5.`,
       'warning',
       false,
       undefined,
@@ -1199,11 +1201,34 @@ export default function App() {
     }
   };
 
-  const handleVerifyPhone = () => {
-    const digits = phone.trim().replace(/\D/g, '');
+  const handleVerifyPhone = async () => {
+    const cleanName = normalizeStaffKey(namaPemohon);
+    if (!cleanName) {
+      setShowValidationErrors(true);
+      setPhoneVerified(false);
+      setPhoneSavedNote('');
+      showNotification(
+        'Pilih Nama Pemohon',
+        'Sila pilih Nama Pemohon terlebih dahulu sebelum mengesahkan dan menyimpan No. Telefon.',
+        'warning',
+        false,
+        undefined,
+        'OK',
+        () => {
+          setTimeout(() => {
+            namaPemohonRef.current?.focus();
+          }, 40);
+        }
+      );
+      return;
+    }
+
+    const cleanPhone = phone.trim();
+    const digits = cleanPhone.replace(/\D/g, '');
     if (digits.length < 9) {
       setShowValidationErrors(true);
       setPhoneVerified(false);
+      setPhoneSavedNote('');
       showNotification(
         'Nombor Telefon Tidak Lengkap',
         'Sila masukkan nombor telefon bimbit yang sah (minimum 9 digit) sebelum menekan butang Sahkan.',
@@ -1219,7 +1244,122 @@ export default function App() {
       );
       return;
     }
+
+    const cleanEmail = email.trim().toLowerCase();
     setPhoneVerified(true);
+    setPhoneLookupStatus('found');
+    setStaffPhoneDirectory((prev) => ({ ...prev, [cleanName]: cleanPhone }));
+    setStaffRecordsByName((prev) => ({
+      ...prev,
+      [cleanName]: {
+        email: cleanEmail || prev[cleanName]?.email || '',
+        nama: cleanName,
+        noTelefon: cleanPhone,
+      },
+    }));
+    if (cleanEmail) {
+      setStaffRecordsByEmail((prev) => ({
+        ...prev,
+        [cleanEmail]: {
+          email: cleanEmail,
+          nama: cleanName,
+          noTelefon: cleanPhone,
+        },
+      }));
+    }
+
+    const gasRun = window.google?.script?.run;
+    const targetSheetFallback = activeTargetSheetUrl || appConfig.recordSpreadsheetUrl;
+    if (!gasRun && !appConfig.gasWebAppUrl) {
+      setPhoneSavedNote('Nama & No. Telefon disahkan dan disimpan secara setempat.');
+      recordErrorLog(
+        'Senarai Nama PPPU5',
+        'Nama & No. Telefon Disimpan (Setempat)',
+        `Rekod "${cleanName}" (${cleanPhone}) disahkan dan disimpan dalam simpanan setempat pelayar.`,
+        'success'
+      );
+      return;
+    }
+
+    setIsSavingPhone(true);
+    setPhoneSavedNote('');
+
+    const payload = {
+      action: 'saveStaffPhone',
+      email: cleanEmail,
+      namaPemohon: cleanName,
+      noTelefon: cleanPhone,
+      recordSpreadsheetUrl: targetSheetFallback,
+    };
+
+    try {
+      let saveRes: {
+        status?: string;
+        saved?: boolean;
+        sheetName?: string;
+        message?: string;
+      } | null = null;
+
+      if (gasRun) {
+        saveRes = await new Promise((resolve, reject) => {
+          gasRun
+            .withSuccessHandler((res: unknown) => {
+              resolve(
+                res && typeof res === 'object'
+                  ? (res as { status?: string; saved?: boolean; sheetName?: string; message?: string })
+                  : null
+              );
+            })
+            .withFailureHandler((err: unknown) => reject(err))
+            .gasSaveStaffPhone(payload);
+        });
+      } else if (appConfig.gasWebAppUrl) {
+        const res = await fetch(appConfig.gasWebAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        const ct = res.headers.get('content-type') || '';
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} (${res.statusText || 'Ralat pelayan'})`);
+        }
+        if (!ct.includes('application/json')) {
+          throw new Error(`Respons pelayan bukan JSON (${ct || 'text/html'}).`);
+        }
+        saveRes = (await res.json()) as {
+          status?: string;
+          saved?: boolean;
+          sheetName?: string;
+          message?: string;
+        };
+      }
+
+      if (saveRes && saveRes.status === 'ok') {
+        const targetSheetLabel = saveRes.sheetName || 'Senarai Nama PPPU5';
+        setPhoneSavedNote(`Nama & No. Telefon disahkan dan disimpan ke helaian "${targetSheetLabel}".`);
+        recordErrorLog(
+          'Senarai Nama PPPU5',
+          'Nama & No. Telefon Disimpan',
+          `Rekod "${cleanName}" (${cleanPhone}) berjaya disahkan dan disimpan ke helaian "${targetSheetLabel}".`,
+          'success'
+        );
+      } else {
+        const errMsg = saveRes?.message || 'Gagal menyimpan rekod ke helaian Senarai Nama PPPU5.';
+        setPhoneSavedNote('Disahkan secara setempat; gagal menyegerak ke Google Sheets (akan disimpan semula semasa Hantar).');
+        recordErrorLog('Senarai Nama PPPU5', 'Ralat Simpan Nama & No. Telefon', errMsg, 'error');
+      }
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err || 'Ralat rangkaian');
+      setPhoneSavedNote('Disahkan secara setempat; gagal menyegerak ke Google Sheets (akan disimpan semula semasa Hantar).');
+      recordErrorLog(
+        'Senarai Nama PPPU5',
+        'Ralat Simpan Nama & No. Telefon',
+        `Gagal menyimpan rekod "${cleanName}" (${cleanPhone}) ke Senarai Nama PPPU5: ${detail}`,
+        'error'
+      );
+    } finally {
+      setIsSavingPhone(false);
+    }
   };
 
   const handleToggleUseDetectedEmail = (checked: boolean) => {
@@ -1257,6 +1397,7 @@ export default function App() {
   const handleNamaPemohonChange = (selectedName: string) => {
     setNamaPemohon(selectedName);
     setPhoneVerified(false);
+    setPhoneSavedNote('');
     const reqId = ++phoneLookupReqRef.current;
 
     if (!selectedName.trim()) {
@@ -2186,6 +2327,7 @@ export default function App() {
     setNamaPemohon('');
     setPhone('');
     setPhoneVerified(false);
+    setPhoneSavedNote('');
     setPhoneLookupStatus('idle');
     setDailySelections({});
     setSuratMode('upload');
@@ -2208,6 +2350,7 @@ export default function App() {
     setStep(1);
     setChecks(WARNING_ITEMS.map(() => false));
     setPhoneVerified(false);
+    setPhoneSavedNote('');
     setDailySelections({});
     setSuratKelulusan('');
     setSuratFile(null);
@@ -2838,6 +2981,7 @@ export default function App() {
                           onChange={(e) => {
                             setPhone(e.target.value);
                             setPhoneVerified(false);
+                            setPhoneSavedNote('');
                           }}
                           placeholder={
                             namaPemohon
@@ -2858,21 +3002,38 @@ export default function App() {
 
                       <button
                         type="button"
-                        onClick={handleVerifyPhone}
-                        className={`shrink-0 min-h-[44px] px-3.5 sm:px-4 rounded-xl border text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors ${
+                        onClick={() => void handleVerifyPhone()}
+                        disabled={isSavingPhone}
+                        className={`shrink-0 min-h-[44px] px-3.5 sm:px-4 rounded-xl border text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 ${
                           phoneVerified
                             ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                             : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-400 text-emerald-800 shadow-xs'
                         }`}
                       >
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>{phoneVerified ? 'Disahkan' : 'Sahkan'}</span>
+                        {isSavingPhone ? (
+                          <Loader2 className="w-4 h-4 text-emerald-600 shrink-0 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        )}
+                        <span>{isSavingPhone ? 'Menyimpan...' : phoneVerified ? 'Disahkan' : 'Sahkan'}</span>
                       </button>
                     </div>
 
-                    {namaPemohon.trim() && phoneLookupStatus === 'missing' && (
+                    {phoneSavedNote && (
+                      <p
+                        className={`mt-1.5 text-[11px] font-medium ${
+                          phoneSavedNote.includes('berjaya') || phoneSavedNote.includes('disimpan ke helaian')
+                            ? 'text-emerald-700'
+                            : 'text-amber-800'
+                        }`}
+                      >
+                        {phoneSavedNote}
+                      </p>
+                    )}
+
+                    {namaPemohon.trim() && phoneLookupStatus === 'missing' && !phoneVerified && (
                       <p className="mt-1.5 text-[11px] font-medium text-amber-800">
-                        Sila masukkan nombor telefon anda dan tekan butang Sahkan. Nombor telefon akan disimpan pada respon pertama semasa menghantar borang.
+                        Sila masukkan nombor telefon anda dan tekan butang Sahkan. Nama dan nombor telefon akan terus disimpan ke Senarai Nama PPPU5 selepas disahkan.
                       </p>
                     )}
 
@@ -2882,9 +3043,9 @@ export default function App() {
                       </p>
                     )}
 
-                    {namaPemohon.trim() && phoneLookupStatus === 'found' && phoneVerified && (
+                    {namaPemohon.trim() && phoneLookupStatus === 'found' && phoneVerified && !phoneSavedNote && (
                       <p className="mt-1 text-[11px] text-slate-500">
-                        Jika ada perubahan nombor, kemaskini No. Telefon di atas dan tekan Sahkan semula.
+                        Jika ada perubahan nombor, kemaskini No. Telefon di atas dan tekan Sahkan semula untuk menyimpan rekod baharu.
                       </p>
                     )}
                   </div>
