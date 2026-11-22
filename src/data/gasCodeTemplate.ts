@@ -11,7 +11,7 @@ export const UPDATED_GAS_CODE = `/**
  */
 
 var PROJECT_WEB_APP_URL = "https://ais-pre-mi4b2guiirsa3dzygt2nyo-258571690397.asia-southeast1.run.app";
-var DEFAULT_GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwo658onRKeksqp4vULUYYMG31L9tvHNvZK9291MP3jOpwpZjDhpTbNarbd6LdvloLrMQ/exec";
+var DEFAULT_GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby8AKPL8DO-KOk220KCtDl4DRI_HrSccKmQoxCEA0V1tILhkC6ICy8Z4DAofJR_2Jo9hg/exec";
 var DEFAULT_BANNER_LOGO_URL = "https://ais-pre-7tcn55bgofr3n6meysstl3-258571690397.asia-southeast1.run.app/assets/aistudio/RefineUpgrade_Logo_7d07d3af.jpg";
 
 // ============================================================================

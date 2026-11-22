@@ -153,7 +153,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   recordSpreadsheetUrl:
     'https://docs.google.com/spreadsheets/d/1DE-YQdkf6l8dhb-iv6GYOXnAsIEpFKKChzMOVV6GgqA/edit#gid=151344881',
   gasWebAppUrl:
-    'https://script.google.com/macros/s/AKfycbwo658onRKeksqp4vULUYYMG31L9tvHNvZK9291MP3jOpwpZjDhpTbNarbd6LdvloLrMQ/exec',
+    'https://script.google.com/macros/s/AKfycby8AKPL8DO-KOk220KCtDl4DRI_HrSccKmQoxCEA0V1tILhkC6ICy8Z4DAofJR_2Jo9hg/exec',
   approvalFolderUrl:
     'https://drive.google.com/drive/folders/1uzm7dR-aCCh6u_xTqFsL532g6aXgkVRoNVX3SsUnKnvEEGFAR_SqY8sU9dXrtxph4o1bDv3f',
   enableSaveNotification: true,

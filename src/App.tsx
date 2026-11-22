@@ -244,6 +244,7 @@ export default function App() {
           'https://script.google.com/macros/s/AKfycbyTXQ5G32JWd7WfHs0IMGPAKKZZL2daZwnUX0Lr1AeeXXQ4eFLWwK3UgHV08xjelvCq/exec',
           'https://script.google.com/macros/s/AKfycbzxQRBVfBGOOlRQoZfsekfU8ULNEV4aygDUEzQS0EOn8fTPrNcJQQ2x1q-Hs6N4u8tx5g/exec',
           'https://script.google.com/macros/s/AKfycbwkr0hiEuDjdWFfkYGqcD25hQpuGC4qA3054LQs6FDtANX3dT7wSR2o5J8ShwsXPuJlQg/exec',
+          'https://script.google.com/macros/s/AKfycbwo658onRKeksqp4vULUYYMG31L9tvHNvZK9291MP3jOpwpZjDhpTbNarbd6LdvloLrMQ/exec',
         ];
         const resolvedGasUrl =
           !parsed.gasWebAppUrl || legacyGasUrls.includes(parsed.gasWebAppUrl)
@@ -568,6 +569,7 @@ export default function App() {
         'https://script.google.com/macros/s/AKfycbyTXQ5G32JWd7WfHs0IMGPAKKZZL2daZwnUX0Lr1AeeXXQ4eFLWwK3UgHV08xjelvCq/exec',
         'https://script.google.com/macros/s/AKfycbzxQRBVfBGOOlRQoZfsekfU8ULNEV4aygDUEzQS0EOn8fTPrNcJQQ2x1q-Hs6N4u8tx5g/exec',
         'https://script.google.com/macros/s/AKfycbwkr0hiEuDjdWFfkYGqcD25hQpuGC4qA3054LQs6FDtANX3dT7wSR2o5J8ShwsXPuJlQg/exec',
+        'https://script.google.com/macros/s/AKfycbwo658onRKeksqp4vULUYYMG31L9tvHNvZK9291MP3jOpwpZjDhpTbNarbd6LdvloLrMQ/exec',
       ];
       const remoteGasUrl =
         res.gasWebAppUrl && (isFromGasRun || !legacyGasUrls.includes(res.gasWebAppUrl))
@@ -1375,7 +1377,7 @@ export default function App() {
         [isoKey]: {
           shift: shiftVal,
           replacementDate: needsDate ? existing.replacementDate : '',
-          note: needsNote ? existing.note : '',
+          note: needsNote ? (existing.note || '').toUpperCase() : '',
         },
       };
     });
@@ -1392,11 +1394,12 @@ export default function App() {
   };
 
   const handleNoteChange = (isoKey: string, noteVal: string) => {
+    const upperNote = noteVal.toUpperCase();
     setDailySelections((prev) => ({
       ...prev,
       [isoKey]: {
         ...(prev[isoKey] || { shift: '', replacementDate: '', note: '' }),
-        note: noteVal,
+        note: upperNote,
       },
     }));
   };
@@ -1618,8 +1621,9 @@ export default function App() {
         val += `\n${formattedDayMonth}`;
         waVal += ` (${formattedDayMonth})`;
       } else if (val && sel?.note?.trim()) {
-        val += `\n(${sel.note.trim()})`;
-        waVal += ` (${sel.note.trim()})`;
+        const cleanUpperNote = sel.note.trim().toUpperCase();
+        val += `\n(${cleanUpperNote})`;
+        waVal += ` (${cleanUpperNote})`;
       }
 
       orderedShifts.push(val);
@@ -1940,7 +1944,7 @@ export default function App() {
       if (sel.replacementDate) {
         shiftDisplay += ` (${formatDateDayMonth(sel.replacementDate)})`;
       } else if (sel.note?.trim()) {
-        shiftDisplay += ` (${sel.note.trim()})`;
+        shiftDisplay += ` (${sel.note.trim().toUpperCase()})`;
       }
       selectedShifts.push({
         dateTitle: item.fullColTitle,
@@ -2957,14 +2961,29 @@ export default function App() {
                                   type="text"
                                   required
                                   aria-required="true"
-                                  value={sel.note}
-                                  onChange={(e) => handleNoteChange(item.isoKey, e.target.value)}
+                                  autoCapitalize="characters"
+                                  value={(sel.note || '').toUpperCase()}
+                                  onChange={(e) => {
+                                    const target = e.currentTarget;
+                                    const start = target.selectionStart;
+                                    const end = target.selectionEnd;
+                                    handleNoteChange(item.isoKey, target.value);
+                                    if (start !== null && end !== null) {
+                                      requestAnimationFrame(() => {
+                                        try {
+                                          target.setSelectionRange(start, end);
+                                        } catch {
+                                          // Ignore selection errors on unsupported inputs
+                                        }
+                                      });
+                                    }
+                                  }}
                                   placeholder={
                                     sel.shift === 'KURSUS'
                                       ? 'Nyatakan nama kursus / lokasi (wajib diisi)...'
                                       : 'Nyatakan catatan / alasan terperinci (wajib diisi)...'
                                   }
-                                  className={`w-full text-xs px-3 py-2 rounded-lg border focus:ring-1 focus:ring-sky-500 focus:outline-none min-h-[40px] ${
+                                  className={`w-full text-xs px-3 py-2 rounded-lg border focus:ring-1 focus:ring-sky-500 focus:outline-none min-h-[40px] uppercase placeholder:normal-case ${
                                     missingNoteError
                                       ? 'border-red-400 bg-red-50'
                                       : 'border-slate-300 bg-slate-50'
