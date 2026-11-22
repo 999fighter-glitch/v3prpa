@@ -18,10 +18,11 @@ import {
   Upload,
   Zap,
 } from 'lucide-react';
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AdminModal } from './components/AdminModal';
 import { ErrorLogEntry, LogHistoryModal } from './components/LogHistoryModal';
 import { NotificationModal, NotificationState } from './components/NotificationModal';
+import { SplashNotificationModal } from './components/SplashNotificationModal';
 import {
   ConfirmationShiftItem,
   SubmitConfirmationModal,
@@ -413,6 +414,10 @@ export default function App() {
   const [confirmSummary, setConfirmSummary] = useState<SubmitConfirmationSummary | null>(null);
   const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
   const [whatsappSummaryText, setWhatsappSummaryText] = useState('');
+  const [showSplashPopup, setShowSplashPopup] = useState(true);
+  const handleCloseSplash = useCallback(() => {
+    setShowSplashPopup(false);
+  }, []);
   const [notification, setNotification] = useState<NotificationState>({
     open: false,
     title: '',
@@ -3278,6 +3283,13 @@ export default function App() {
           setNotification((prev) => ({ ...prev, open: false, onAfterClose: undefined }));
           cb?.();
         }}
+      />
+
+      <SplashNotificationModal
+        open={showSplashPopup}
+        tajuk1={appConfig.tajuk1 || DEFAULT_CONFIG.tajuk1}
+        appVersion={normalizeAppVersion(appConfig.appVersion, DEFAULT_CONFIG.appVersion)}
+        onClose={handleCloseSplash}
       />
     </div>
   );
