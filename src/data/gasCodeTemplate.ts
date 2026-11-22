@@ -469,8 +469,32 @@ function readSettingsFromSheet() {
 // DATABASE HELAIAN 'Senarai Nama PPPU5' (Email, Nama, No Telefon)
 // ============================================================================
 
+function findStaffDirectorySheet(ss) {
+  if (!ss) return null;
+  var candidates = [
+    STAFF_DIRECTORY_SHEET_NAME,
+    "Senarai Nama PPP",
+    "Senarai Nama PPP U5"
+  ];
+  for (var i = 0; i < candidates.length; i++) {
+    var exact = ss.getSheetByName(candidates[i]);
+    if (exact) return exact;
+  }
+  var allSheets = ss.getSheets();
+  var normalizedTargets = candidates.map(function(c) {
+    return c.replace(/\\s+/g, " ").trim().toUpperCase();
+  });
+  for (var j = 0; j < allSheets.length; j++) {
+    var sName = String(allSheets[j].getName() || "").replace(/\\s+/g, " ").trim().toUpperCase();
+    if (normalizedTargets.indexOf(sName) !== -1) {
+      return allSheets[j];
+    }
+  }
+  return null;
+}
+
 function getOrCreateStaffDirectorySheet(ss) {
-  var sheet = ss.getSheetByName(STAFF_DIRECTORY_SHEET_NAME);
+  var sheet = findStaffDirectorySheet(ss);
   if (!sheet) {
     sheet = ss.insertSheet(STAFF_DIRECTORY_SHEET_NAME);
   }
@@ -488,6 +512,18 @@ function getOrCreateStaffDirectorySheet(ss) {
   return sheet;
 }
 
+function findAnyHeaderIndex(normalizedHeaders, targetNames, fallbackIndex) {
+  for (var t = 0; t < targetNames.length; t++) {
+    var targetUpper = String(targetNames[t]).replace(/\\s+/g, " ").trim().toUpperCase();
+    for (var i = 0; i < normalizedHeaders.length; i++) {
+      if (normalizedHeaders[i].toUpperCase() === targetUpper) {
+        return i;
+      }
+    }
+  }
+  return fallbackIndex;
+}
+
 function getStaffDirectoryColumnIndexes(sheet) {
   var lastCol = Math.max(3, sheet.getLastColumn());
   var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
@@ -495,9 +531,9 @@ function getStaffDirectoryColumnIndexes(sheet) {
     return String(h || "").replace(/\\s+/g, " ").trim();
   });
   return {
-    emailCol: findHeaderIndex(norm, "Email", 0),
-    nameCol: findHeaderIndex(norm, "Nama", 1),
-    phoneCol: findHeaderIndex(norm, "No Telefon", 2)
+    emailCol: findAnyHeaderIndex(norm, ["Email", "Email Address", "Emel", "Alamat Emel"], 0),
+    nameCol: findAnyHeaderIndex(norm, ["Nama", "Nama Pemohon", "Nama Penuh", "Nama PPP"], 1),
+    phoneCol: findAnyHeaderIndex(norm, ["No Telefon", "No. Telefon", "No Telefon Bimbit", "Telefon", "No Tel"], 2)
   };
 }
 
@@ -506,11 +542,11 @@ function readStaffDirectoryData(ss) {
   var recordsByName = {};
   var recordsByEmail = {};
   if (!ss) {
-    return { directory: directory, recordsByName: recordsByName, recordsByEmail: recordsByEmail };
+    return { directory: directory, recordsByName: recordsByName, recordsByEmail: recordsByEmail, sheet: null };
   }
-  var sheet = ss.getSheetByName(STAFF_DIRECTORY_SHEET_NAME);
+  var sheet = findStaffDirectorySheet(ss);
   if (!sheet || sheet.getLastRow() < 2) {
-    return { directory: directory, recordsByName: recordsByName, recordsByEmail: recordsByEmail };
+    return { directory: directory, recordsByName: recordsByName, recordsByEmail: recordsByEmail, sheet: sheet };
   }
   var cols = getStaffDirectoryColumnIndexes(sheet);
   var numCols = Math.max(3, cols.emailCol + 1, cols.nameCol + 1, cols.phoneCol + 1);
@@ -630,17 +666,22 @@ function gasGetStaffDirectory(fallbackUrl) {
     var ss = getTargetSpreadsheet(fallbackUrl || "");
     var sheet = getOrCreateStaffDirectorySheet(ss);
     var parsed = readStaffDirectoryData(ss);
+    var totalRecords = Object.keys(parsed.recordsByName).length;
     return {
       status: "ok",
+      sheetExists: Boolean(sheet),
+      totalRecords: totalRecords,
       directory: parsed.directory,
       recordsByName: parsed.recordsByName,
       recordsByEmail: parsed.recordsByEmail,
-      sheetName: STAFF_DIRECTORY_SHEET_NAME,
+      sheetName: sheet ? sheet.getName() : STAFF_DIRECTORY_SHEET_NAME,
       sheetUrl: buildSheetUrlWithGid(ss, sheet)
     };
   } catch (err) {
     return {
       status: "error",
+      sheetExists: false,
+      totalRecords: 0,
       directory: {},
       recordsByName: {},
       recordsByEmail: {},
@@ -1104,7 +1145,7 @@ function doGet(e) {
     return ContentService.createTextOutput(
       JSON.stringify(
         gasLookupStaffPhone(
-          e.parameter.nama || "",
+          e.parameter.nama || e.parameter.namaPemohon || "",
           e.parameter.fallbackUrl || "",
           e.parameter.email || ""
         )

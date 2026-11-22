@@ -66,6 +66,7 @@ interface AdminModalProps {
   onSaveConfig: (nextConfig: AppConfig) => void;
   onClearRecords: () => void;
   onDeleteRecord: (id: string) => void;
+  onRecordLog?: (source: string, title: string, message: string, level?: 'error' | 'success') => void;
 }
 
 export function AdminModal({
@@ -76,6 +77,7 @@ export function AdminModal({
   onSaveConfig,
   onClearRecords,
   onDeleteRecord,
+  onRecordLog,
 }: AdminModalProps) {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [accessCodeInput, setAccessCodeInput] = useState('');
@@ -211,31 +213,92 @@ export function AdminModal({
     if (gasRun) {
       setConnectionCheck({
         status: 'checking',
-        message: 'Sedang menyemak sambungan terus ke Google Apps Script & Google Sheet...',
+        message: 'Sedang menyemak sambungan Google Sheet & helaian Senarai Nama PPPU5...',
         checkedAt: formatTimestampNow(),
         latencyMs: null,
       });
       const startedAt = performance.now();
       gasRun
         .withSuccessHandler((res: unknown) => {
-          const elapsedMs = Math.round(performance.now() - startedAt);
           const data = (res || {}) as Partial<AppConfig> & { status?: string };
-          if (data.recordSpreadsheetUrl || data.logoUrl || data.svName || data.status === 'ok') {
-            setConnectionCheck({
-              status: 'connected',
-              message: 'Sambungan terus Apps Script (HtmlService) ke Google Sheet aktif dan berjaya disahkan.',
-              checkedAt: formatTimestampNow(),
-              latencyMs: elapsedMs,
-              targetUrl: data.recordSpreadsheetUrl || recordSpreadsheetUrl,
-            });
-          } else {
+          if (!(data.recordSpreadsheetUrl || data.logoUrl || data.svName || data.status === 'ok')) {
+            const elapsedMs = Math.round(performance.now() - startedAt);
             setConnectionCheck({
               status: 'error',
               message: 'Respons diterima tetapi data konfigurasi Google Sheet tidak lengkap.',
               checkedAt: formatTimestampNow(),
               latencyMs: elapsedMs,
             });
+            return;
           }
+
+          gasRun
+            .withSuccessHandler((dirRes: unknown) => {
+              const elapsedMs = Math.round(performance.now() - startedAt);
+              const dirData = (dirRes || {}) as {
+                status?: string;
+                sheetName?: string;
+                totalRecords?: number;
+                recordsByName?: Record<string, unknown>;
+                message?: string;
+              };
+              if (dirData.status === 'ok') {
+                const count =
+                  typeof dirData.totalRecords === 'number'
+                    ? dirData.totalRecords
+                    : dirData.recordsByName
+                      ? Object.keys(dirData.recordsByName).length
+                      : 0;
+                const sheetLabel = dirData.sheetName || 'Senarai Nama PPPU5';
+                const successMsg = `Sambungan aktif ke Google Sheet & helaian "${sheetLabel}" (${count} rekod PPP).`;
+                setConnectionCheck({
+                  status: 'connected',
+                  message: successMsg,
+                  checkedAt: formatTimestampNow(),
+                  latencyMs: elapsedMs,
+                  targetUrl: data.recordSpreadsheetUrl || recordSpreadsheetUrl,
+                });
+                onRecordLog?.(
+                  'Senarai Nama PPPU5 (Uji Sambungan)',
+                  'Sambungan Senarai Nama PPP Berjaya',
+                  `${successMsg} (${elapsedMs} ms)`,
+                  'success'
+                );
+              } else {
+                const errMsg =
+                  dirData.message ||
+                  'Sambungan utama aktif, tetapi gagal membaca helaian "Senarai Nama PPPU5".';
+                setConnectionCheck({
+                  status: 'error',
+                  message: errMsg,
+                  checkedAt: formatTimestampNow(),
+                  latencyMs: elapsedMs,
+                });
+                onRecordLog?.(
+                  'Senarai Nama PPPU5 (Uji Sambungan)',
+                  'Ralat Uji Sambungan Senarai Nama PPP',
+                  errMsg,
+                  'error'
+                );
+              }
+            })
+            .withFailureHandler((dirErr: unknown) => {
+              const elapsedMs = Math.round(performance.now() - startedAt);
+              const errMsg = `Sambungan utama aktif, tetapi gagal memanggil gasGetStaffDirectory(): ${String(dirErr)}`;
+              setConnectionCheck({
+                status: 'error',
+                message: errMsg,
+                checkedAt: formatTimestampNow(),
+                latencyMs: elapsedMs,
+              });
+              onRecordLog?.(
+                'Senarai Nama PPPU5 (Uji Sambungan)',
+                'Ralat Uji Sambungan Senarai Nama PPP',
+                errMsg,
+                'error'
+              );
+            })
+            .gasGetStaffDirectory(data.recordSpreadsheetUrl || recordSpreadsheetUrl);
         })
         .withFailureHandler((err: unknown) => {
           const elapsedMs = Math.round(performance.now() - startedAt);
@@ -263,7 +326,7 @@ export function AdminModal({
 
     setConnectionCheck({
       status: 'checking',
-      message: 'Sedang menyemak sambungan ke Google Apps Script & Google Sheet...',
+      message: 'Sedang menyemak sambungan Google Sheet & helaian Senarai Nama PPPU5...',
       checkedAt: formatTimestampNow(),
       latencyMs: null,
     });
@@ -272,10 +335,14 @@ export function AdminModal({
     try {
       const sep = targetGasUrl.includes('?') ? '&' : '?';
       const checkUrl = `${targetGasUrl}${sep}action=getConfig&t=${Date.now()}`;
-      const response = await fetch(checkUrl, {
-        method: 'GET',
-        cache: 'no-store',
-      });
+      const dirUrl = `${targetGasUrl}${sep}action=getStaffDirectory&fallbackUrl=${encodeURIComponent(
+        recordSpreadsheetUrl.trim() || config.recordSpreadsheetUrl
+      )}&t=${Date.now()}`;
+
+      const [response, dirResponse] = await Promise.all([
+        fetch(checkUrl, { method: 'GET', cache: 'no-store' }),
+        fetch(dirUrl, { method: 'GET', cache: 'no-store' }),
+      ]);
       const elapsedMs = Math.round(performance.now() - startedAt);
       const checkedAt = formatTimestampNow();
 
@@ -290,21 +357,72 @@ export function AdminModal({
       }
 
       const data = (await response.json()) as Partial<AppConfig> & { status?: string };
-      if (data && (data.recordSpreadsheetUrl || data.logoUrl || data.svName || data.status === 'ok')) {
-        setConnectionCheck({
-          status: 'connected',
-          message: 'Sambungan aktif ke Google Apps Script & Google Sheet berjaya disahkan.',
-          checkedAt,
-          latencyMs: elapsedMs,
-          targetUrl: data.recordSpreadsheetUrl || recordSpreadsheetUrl,
-        });
-      } else {
+      if (!(data && (data.recordSpreadsheetUrl || data.logoUrl || data.svName || data.status === 'ok'))) {
         setConnectionCheck({
           status: 'error',
           message: 'Respons diterima tetapi data konfigurasi Google Sheet tidak lengkap.',
           checkedAt,
           latencyMs: elapsedMs,
         });
+        return;
+      }
+
+      if (!dirResponse.ok) {
+        setConnectionCheck({
+          status: 'error',
+          message: `Sambungan utama aktif, tetapi helaian Senarai Nama PPPU5 memulangkan HTTP ${dirResponse.status}.`,
+          checkedAt,
+          latencyMs: elapsedMs,
+        });
+        return;
+      }
+
+      const dirData = (await dirResponse.json()) as {
+        status?: string;
+        sheetName?: string;
+        totalRecords?: number;
+        recordsByName?: Record<string, unknown>;
+        message?: string;
+      };
+
+      if (dirData && dirData.status === 'ok') {
+        const count =
+          typeof dirData.totalRecords === 'number'
+            ? dirData.totalRecords
+            : dirData.recordsByName
+              ? Object.keys(dirData.recordsByName).length
+              : 0;
+        const sheetLabel = dirData.sheetName || 'Senarai Nama PPPU5';
+        const successMsg = `Sambungan aktif ke Google Sheet & helaian "${sheetLabel}" (${count} rekod PPP).`;
+        setConnectionCheck({
+          status: 'connected',
+          message: successMsg,
+          checkedAt,
+          latencyMs: elapsedMs,
+          targetUrl: data.recordSpreadsheetUrl || recordSpreadsheetUrl,
+        });
+        onRecordLog?.(
+          'Senarai Nama PPPU5 (Uji Sambungan)',
+          'Sambungan Senarai Nama PPP Berjaya',
+          `${successMsg} (${elapsedMs} ms)`,
+          'success'
+        );
+      } else {
+        const errMsg =
+          dirData?.message ||
+          'Sambungan utama aktif, tetapi gagal membaca helaian "Senarai Nama PPPU5".';
+        setConnectionCheck({
+          status: 'error',
+          message: errMsg,
+          checkedAt,
+          latencyMs: elapsedMs,
+        });
+        onRecordLog?.(
+          'Senarai Nama PPPU5 (Uji Sambungan)',
+          'Ralat Uji Sambungan Senarai Nama PPP',
+          errMsg,
+          'error'
+        );
       }
     } catch (err) {
       const elapsedMs = Math.round(performance.now() - startedAt);

@@ -427,6 +427,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const phoneLookupReqRef = useRef(0);
   const lastResolvedPeriodRef = useRef('');
+  const lastLoggedStaffDirKeyRef = useRef('');
 
   const rosterPeriods = useMemo(() => generateRosterPeriods(), []);
   const dateItems = useMemo(
@@ -818,6 +819,9 @@ export default function App() {
       res: {
         status?: string;
         message?: string;
+        sheetName?: string;
+        sheetUrl?: string;
+        totalRecords?: number;
         directory?: Record<string, string>;
         recordsByName?: Record<string, StaffDirectoryEntry>;
         recordsByEmail?: Record<string, StaffDirectoryEntry>;
@@ -841,6 +845,25 @@ export default function App() {
       if (res.recordsByEmail) {
         setStaffRecordsByEmail((prev) => ({ ...prev, ...res.recordsByEmail }));
       }
+      const sheetLabel = res.sheetName || 'Senarai Nama PPPU5';
+      const count =
+        typeof res.totalRecords === 'number'
+          ? res.totalRecords
+          : res.recordsByName
+            ? Object.keys(res.recordsByName).length
+            : res.directory
+              ? Object.keys(res.directory).length
+              : 0;
+      const dirLogKey = `${appConfig.gasWebAppUrl || 'gasRun'}|${sheetLabel}|${count}`;
+      if (lastLoggedStaffDirKeyRef.current !== dirLogKey) {
+        lastLoggedStaffDirKeyRef.current = dirLogKey;
+        recordErrorLog(
+          'Senarai Nama PPPU5',
+          'Sambungan Senarai Nama PPP Berjaya',
+          `Berjaya disambungkan ke helaian "${sheetLabel}" (${count} rekod PPP dimuatkan).`,
+          'success'
+        );
+      }
     };
 
     const gasRun = window.google?.script?.run;
@@ -852,6 +875,9 @@ export default function App() {
               res as {
                 status?: string;
                 message?: string;
+                sheetName?: string;
+                sheetUrl?: string;
+                totalRecords?: number;
                 directory?: Record<string, string>;
                 recordsByName?: Record<string, StaffDirectoryEntry>;
                 recordsByEmail?: Record<string, StaffDirectoryEntry>;
@@ -888,6 +914,9 @@ export default function App() {
           return (await res.json()) as {
             status?: string;
             message?: string;
+            sheetName?: string;
+            sheetUrl?: string;
+            totalRecords?: number;
             directory?: Record<string, string>;
             recordsByName?: Record<string, StaffDirectoryEntry>;
             recordsByEmail?: Record<string, StaffDirectoryEntry>;
@@ -3211,6 +3240,7 @@ export default function App() {
         onSaveConfig={handleSaveAdminConfig}
         onClearRecords={() => setRecords([])}
         onDeleteRecord={(id) => setRecords((prev) => prev.filter((item) => item.id !== id))}
+        onRecordLog={recordErrorLog}
       />
 
       <SubmitConfirmationModal
