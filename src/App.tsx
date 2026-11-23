@@ -2508,26 +2508,6 @@ export default function App() {
                 <ExternalLink className="w-4 h-4 shrink-0" />
                 <span>Buka Rekod Permohonan Roster</span>
               </a>
-
-              <button
-                type="button"
-                onClick={() => setLogHistoryOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3.5 py-2.5 sm:py-2 rounded-xl transition-colors border border-slate-200 min-h-[42px] sm:min-h-[40px]"
-              >
-                <History className="w-4 h-4 text-slate-600 shrink-0" />
-                <span>Log History</span>
-                {errorLogs.length > 0 && (
-                  <span
-                    className={`ml-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-md tabular-nums ${
-                      errorLogs.some((entry) => entry.level !== 'success')
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}
-                  >
-                    {errorLogs.length}
-                  </span>
-                )}
-              </button>
             </div>
           </div>
         </header>
@@ -2753,14 +2733,6 @@ export default function App() {
                   >
                     <span>Teruskan ke Borang Permohonan</span>
                     <ChevronDown className="w-4 h-4 shrink-0" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDemoAutoTickAndOpen}
-                    className="min-h-[44px] bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-4 sm:px-5 rounded-xl shadow-sm transition-colors inline-flex items-center justify-center gap-2 text-xs sm:text-sm"
-                  >
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>Mod Demo: Auto-Tandakan &amp; Buka Borang</span>
                   </button>
                 </div>
               </section>
