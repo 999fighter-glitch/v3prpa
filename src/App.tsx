@@ -96,6 +96,16 @@ const stripSheetGid = (url: string): string => {
     .replace(/[?&]+$/, '');
 };
 
+const extractDriveFileId = (url: string): string => {
+  const s = (url || '').trim();
+  if (!s) return '';
+  const m =
+    s.match(/https?:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i) ||
+    s.match(/https?:\/\/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([a-zA-Z0-9_-]+)/i) ||
+    s.match(/https?:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/i);
+  return m && m[1] ? m[1] : '';
+};
+
 const dedupeEmailsPreserveOrder = (list: string[]): string[] => {
   const seen = new Set<string>();
   const result: string[] = [];
@@ -379,8 +389,6 @@ export default function App() {
   const [phoneLookupStatus, setPhoneLookupStatus] = useState<'idle' | 'checking' | 'found' | 'missing'>(
     initialFormDraft?.phoneLookupStatus ?? 'idle'
   );
-  const [isSavingPhone, setIsSavingPhone] = useState(false);
-  const [phoneSavedNote, setPhoneSavedNote] = useState('');
   const [dailySelections, setDailySelections] = useState<Record<string, DailyShiftSelection>>(
     initialFormDraft?.dailySelections ?? {}
   );
@@ -1201,15 +1209,14 @@ export default function App() {
     }
   };
 
-  const handleVerifyPhone = async () => {
+  const handleVerifyPhone = () => {
     const cleanName = normalizeStaffKey(namaPemohon);
     if (!cleanName) {
       setShowValidationErrors(true);
       setPhoneVerified(false);
-      setPhoneSavedNote('');
       showNotification(
         'Pilih Nama Pemohon',
-        'Sila pilih Nama Pemohon terlebih dahulu sebelum mengesahkan dan menyimpan No. Telefon.',
+        'Sila pilih Nama Pemohon terlebih dahulu sebelum mengesahkan No. Telefon.',
         'warning',
         false,
         undefined,
@@ -1228,7 +1235,6 @@ export default function App() {
     if (digits.length < 9) {
       setShowValidationErrors(true);
       setPhoneVerified(false);
-      setPhoneSavedNote('');
       showNotification(
         'Nombor Telefon Tidak Lengkap',
         'Sila masukkan nombor telefon bimbit yang sah (minimum 9 digit) sebelum menekan butang Sahkan.',
@@ -1271,18 +1277,14 @@ export default function App() {
     const gasRun = window.google?.script?.run;
     const targetSheetFallback = activeTargetSheetUrl || appConfig.recordSpreadsheetUrl;
     if (!gasRun && !appConfig.gasWebAppUrl) {
-      setPhoneSavedNote('Nama & No. Telefon disahkan dan disimpan secara setempat.');
       recordErrorLog(
         'Senarai Nama PPPU5',
-        'Nama & No. Telefon Disimpan (Setempat)',
-        `Rekod "${cleanName}" (${cleanPhone}) disahkan dan disimpan dalam simpanan setempat pelayar.`,
+        'Nama & No. Telefon Berjaya Direkodkan',
+        `Rekod "${cleanName}" (${cleanPhone}) berjaya direkodkan secara setempat.`,
         'success'
       );
       return;
     }
-
-    setIsSavingPhone(true);
-    setPhoneSavedNote('');
 
     const payload = {
       action: 'saveStaffPhone',
@@ -1292,73 +1294,87 @@ export default function App() {
       recordSpreadsheetUrl: targetSheetFallback,
     };
 
-    try {
-      let saveRes: {
-        status?: string;
-        saved?: boolean;
-        sheetName?: string;
-        message?: string;
-      } | null = null;
-
-      if (gasRun) {
-        saveRes = await new Promise((resolve, reject) => {
-          gasRun
-            .withSuccessHandler((res: unknown) => {
-              resolve(
-                res && typeof res === 'object'
-                  ? (res as { status?: string; saved?: boolean; sheetName?: string; message?: string })
-                  : null
-              );
-            })
-            .withFailureHandler((err: unknown) => reject(err))
-            .gasSaveStaffPhone(payload);
+    // Simpan Nama & No. Telefon secara senyap di latar belakang (Log History sahaja)
+    if (gasRun) {
+      gasRun
+        .withSuccessHandler((res: unknown) => {
+          const saveRes =
+            res && typeof res === 'object'
+              ? (res as { status?: string; sheetName?: string; message?: string })
+              : null;
+          if (saveRes && saveRes.status === 'ok') {
+            const targetSheetLabel = saveRes.sheetName || 'Senarai Nama PPPU5';
+            recordErrorLog(
+              'Senarai Nama PPPU5',
+              'Nama & No. Telefon Berjaya Direkodkan',
+              `Rekod "${cleanName}" (${cleanPhone}) berjaya direkodkan ke helaian "${targetSheetLabel}".`,
+              'success'
+            );
+          } else {
+            recordErrorLog(
+              'Senarai Nama PPPU5',
+              'Ralat Simpan Nama & No. Telefon',
+              saveRes?.message || `Gagal merekodkan "${cleanName}" (${cleanPhone}) ke helaian Senarai Nama PPPU5.`,
+              'error'
+            );
+          }
+        })
+        .withFailureHandler((err: unknown) => {
+          recordErrorLog(
+            'Senarai Nama PPPU5',
+            'Ralat Simpan Nama & No. Telefon',
+            `Gagal merekodkan "${cleanName}" (${cleanPhone}) ke Senarai Nama PPPU5: ${String(err || 'Ralat pelayan GAS')}`,
+            'error'
+          );
+        })
+        .gasSaveStaffPhone(payload);
+    } else if (appConfig.gasWebAppUrl) {
+      fetch(appConfig.gasWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      })
+        .then(async (res) => {
+          const ct = res.headers.get('content-type') || '';
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status} (${res.statusText || 'Ralat pelayan'})`);
+          }
+          if (!ct.includes('application/json')) {
+            throw new Error(`Respons pelayan bukan JSON (${ct || 'text/html'}).`);
+          }
+          return (await res.json()) as {
+            status?: string;
+            sheetName?: string;
+            message?: string;
+          };
+        })
+        .then((saveRes) => {
+          if (saveRes && saveRes.status === 'ok') {
+            const targetSheetLabel = saveRes.sheetName || 'Senarai Nama PPPU5';
+            recordErrorLog(
+              'Senarai Nama PPPU5',
+              'Nama & No. Telefon Berjaya Direkodkan',
+              `Rekod "${cleanName}" (${cleanPhone}) berjaya direkodkan ke helaian "${targetSheetLabel}".`,
+              'success'
+            );
+          } else {
+            recordErrorLog(
+              'Senarai Nama PPPU5',
+              'Ralat Simpan Nama & No. Telefon',
+              saveRes?.message || `Gagal merekodkan "${cleanName}" (${cleanPhone}) ke helaian Senarai Nama PPPU5.`,
+              'error'
+            );
+          }
+        })
+        .catch((err: unknown) => {
+          const detail = err instanceof Error ? err.message : String(err || 'Ralat rangkaian');
+          recordErrorLog(
+            'Senarai Nama PPPU5',
+            'Ralat Simpan Nama & No. Telefon',
+            `Gagal merekodkan "${cleanName}" (${cleanPhone}) ke Senarai Nama PPPU5: ${detail}`,
+            'error'
+          );
         });
-      } else if (appConfig.gasWebAppUrl) {
-        const res = await fetch(appConfig.gasWebAppUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload),
-        });
-        const ct = res.headers.get('content-type') || '';
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status} (${res.statusText || 'Ralat pelayan'})`);
-        }
-        if (!ct.includes('application/json')) {
-          throw new Error(`Respons pelayan bukan JSON (${ct || 'text/html'}).`);
-        }
-        saveRes = (await res.json()) as {
-          status?: string;
-          saved?: boolean;
-          sheetName?: string;
-          message?: string;
-        };
-      }
-
-      if (saveRes && saveRes.status === 'ok') {
-        const targetSheetLabel = saveRes.sheetName || 'Senarai Nama PPPU5';
-        setPhoneSavedNote(`Nama & No. Telefon disahkan dan disimpan ke helaian "${targetSheetLabel}".`);
-        recordErrorLog(
-          'Senarai Nama PPPU5',
-          'Nama & No. Telefon Disimpan',
-          `Rekod "${cleanName}" (${cleanPhone}) berjaya disahkan dan disimpan ke helaian "${targetSheetLabel}".`,
-          'success'
-        );
-      } else {
-        const errMsg = saveRes?.message || 'Gagal menyimpan rekod ke helaian Senarai Nama PPPU5.';
-        setPhoneSavedNote('Disahkan secara setempat; gagal menyegerak ke Google Sheets (akan disimpan semula semasa Hantar).');
-        recordErrorLog('Senarai Nama PPPU5', 'Ralat Simpan Nama & No. Telefon', errMsg, 'error');
-      }
-    } catch (err: unknown) {
-      const detail = err instanceof Error ? err.message : String(err || 'Ralat rangkaian');
-      setPhoneSavedNote('Disahkan secara setempat; gagal menyegerak ke Google Sheets (akan disimpan semula semasa Hantar).');
-      recordErrorLog(
-        'Senarai Nama PPPU5',
-        'Ralat Simpan Nama & No. Telefon',
-        `Gagal menyimpan rekod "${cleanName}" (${cleanPhone}) ke Senarai Nama PPPU5: ${detail}`,
-        'error'
-      );
-    } finally {
-      setIsSavingPhone(false);
     }
   };
 
@@ -1397,7 +1413,6 @@ export default function App() {
   const handleNamaPemohonChange = (selectedName: string) => {
     setNamaPemohon(selectedName);
     setPhoneVerified(false);
-    setPhoneSavedNote('');
     const reqId = ++phoneLookupReqRef.current;
 
     if (!selectedName.trim()) {
@@ -1928,8 +1943,8 @@ export default function App() {
         setWhatsappModalOpen(true);
       } else if (shouldNotify) {
         showNotification(
-          `Permohonan bagi Tugasan ${tempohTugasan}`,
-          'Berjaya di rekodkan\nTerima kasih.',
+          'Permohonan berjaya ,',
+          `Permohonan anda bagi jadual ${tempohTugasan} telah direkodkan .`,
           'success',
           true,
           savedUrl || undefined
@@ -2327,7 +2342,6 @@ export default function App() {
     setNamaPemohon('');
     setPhone('');
     setPhoneVerified(false);
-    setPhoneSavedNote('');
     setPhoneLookupStatus('idle');
     setDailySelections({});
     setSuratMode('upload');
@@ -2350,7 +2364,6 @@ export default function App() {
     setStep(1);
     setChecks(WARNING_ITEMS.map(() => false));
     setPhoneVerified(false);
-    setPhoneSavedNote('');
     setDailySelections({});
     setSuratKelulusan('');
     setSuratFile(null);
@@ -2410,8 +2423,12 @@ export default function App() {
     (/gid=\d+/i.test(effectiveSheetUrl) && !isFormResponsesSheetUrl(effectiveSheetUrl)
       ? `TUGAS PPPU5 ${formatDateDisplay(appConfig.startDate)} - ${formatDateDisplay(appConfig.endDate)}`
       : '');
-  const resolvedLogoSrc =
-    logoFallbackAttempted && appConfig.logoUrl === DEFAULT_BANNER_LOGO_URL
+  const bannerDriveFileId = extractDriveFileId(appConfig.logoUrl);
+  const resolvedLogoSrc = bannerDriveFileId
+    ? logoFallbackAttempted
+      ? `https://drive.google.com/uc?export=view&id=${bannerDriveFileId}`
+      : `https://lh3.googleusercontent.com/d/${bannerDriveFileId}`
+    : logoFallbackAttempted && appConfig.logoUrl === DEFAULT_BANNER_LOGO_URL
       ? `https://ais-pre-7tcn55bgofr3n6meysstl3-258571690397.asia-southeast1.run.app${DEFAULT_BANNER_LOGO_URL}`
       : appConfig.logoUrl;
 
@@ -2439,7 +2456,10 @@ export default function App() {
                 alt="Banner Rasmi Unit PRPA HTAR"
                 referrerPolicy="no-referrer"
                 onError={() => {
-                  if (!logoFallbackAttempted && appConfig.logoUrl === DEFAULT_BANNER_LOGO_URL) {
+                  if (
+                    !logoFallbackAttempted &&
+                    (bannerDriveFileId || appConfig.logoUrl === DEFAULT_BANNER_LOGO_URL)
+                  ) {
                     setLogoFallbackAttempted(true);
                   } else {
                     setLogoLoadError(true);
@@ -2542,20 +2562,13 @@ export default function App() {
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <Check className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-emerald-900">Permohonan Berjaya.</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-emerald-900">Permohonan berjaya ,</h2>
             <p className="text-xs sm:text-sm text-emerald-700 max-w-md mx-auto">
               Permohonan anda bagi jadual{' '}
               <span className="font-semibold text-emerald-900 tabular-nums">
                 {formatDateDisplay(appConfig.startDate)} - {formatDateDisplay(appConfig.endDate)}
               </span>{' '}
-              telah direkodkan
-              {effectiveSheetName ? (
-                <>
-                  {' '}ke helaian{' '}
-                  <span className="font-semibold text-emerald-900">{effectiveSheetName}</span>
-                </>
-              ) : null}
-              .
+              telah direkodkan .
             </p>
             <div className="pt-2 flex flex-col sm:flex-row flex-wrap justify-center gap-2.5 sm:gap-3">
               {whatsappSummaryText && (
@@ -2981,7 +2994,6 @@ export default function App() {
                           onChange={(e) => {
                             setPhone(e.target.value);
                             setPhoneVerified(false);
-                            setPhoneSavedNote('');
                           }}
                           placeholder={
                             namaPemohon
@@ -3002,38 +3014,21 @@ export default function App() {
 
                       <button
                         type="button"
-                        onClick={() => void handleVerifyPhone()}
-                        disabled={isSavingPhone}
-                        className={`shrink-0 min-h-[44px] px-3.5 sm:px-4 rounded-xl border text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 ${
+                        onClick={handleVerifyPhone}
+                        className={`shrink-0 min-h-[44px] px-3.5 sm:px-4 rounded-xl border text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors ${
                           phoneVerified
                             ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                             : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-400 text-emerald-800 shadow-xs'
                         }`}
                       >
-                        {isSavingPhone ? (
-                          <Loader2 className="w-4 h-4 text-emerald-600 shrink-0 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        )}
-                        <span>{isSavingPhone ? 'Menyimpan...' : phoneVerified ? 'Disahkan' : 'Sahkan'}</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{phoneVerified ? 'Disahkan' : 'Sahkan'}</span>
                       </button>
                     </div>
 
-                    {phoneSavedNote && (
-                      <p
-                        className={`mt-1.5 text-[11px] font-medium ${
-                          phoneSavedNote.includes('berjaya') || phoneSavedNote.includes('disimpan ke helaian')
-                            ? 'text-emerald-700'
-                            : 'text-amber-800'
-                        }`}
-                      >
-                        {phoneSavedNote}
-                      </p>
-                    )}
-
                     {namaPemohon.trim() && phoneLookupStatus === 'missing' && !phoneVerified && (
                       <p className="mt-1.5 text-[11px] font-medium text-amber-800">
-                        Sila masukkan nombor telefon anda dan tekan butang Sahkan. Nama dan nombor telefon akan terus disimpan ke Senarai Nama PPPU5 selepas disahkan.
+                        Sila masukkan nombor telefon anda dan tekan butang Sahkan.
                       </p>
                     )}
 
@@ -3043,9 +3038,9 @@ export default function App() {
                       </p>
                     )}
 
-                    {namaPemohon.trim() && phoneLookupStatus === 'found' && phoneVerified && !phoneSavedNote && (
+                    {namaPemohon.trim() && phoneLookupStatus === 'found' && phoneVerified && (
                       <p className="mt-1 text-[11px] text-slate-500">
-                        Jika ada perubahan nombor, kemaskini No. Telefon di atas dan tekan Sahkan semula untuk menyimpan rekod baharu.
+                        Jika ada perubahan nombor, kemaskini No. Telefon di atas dan tekan Sahkan semula.
                       </p>
                     )}
                   </div>
